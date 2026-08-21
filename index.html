@@ -592,6 +592,60 @@ html, body {
   }
 }
 </style>
+
+<style id="mobile-final-fix">
+@media (max-width: 768px) {
+  /* Sound: smaller and directly under the title, never touching the frame edge. */
+  .sound-btn {
+    width: 36px !important;
+    height: 36px !important;
+    top: 66px !important;
+    left: 14px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+    z-index: 10001 !important;
+  }
+
+  /* Keep the HUD/rank above the orbiting satellites. */
+  .stats {
+    position: relative !important;
+    z-index: 40 !important;
+  }
+  .era {
+    position: relative !important;
+    z-index: 45 !important;
+  }
+
+  /* Move and slightly shrink the planet so it is fully visible. */
+  .planet-wrap {
+    width: min(58vw, 30svh, 250px) !important;
+    height: min(58vw, 30svh, 250px) !important;
+    margin: -12px 0 0 -12px !important;
+  }
+
+  /* The shop has a real touch-scroll area. */
+  .upgrades {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
+    scrollbar-width: thin;
+  }
+
+  .upgrades::-webkit-scrollbar { width: 8px; }
+  .upgrades::-webkit-scrollbar-track {
+    background: rgba(10,16,42,0.34);
+    border-radius: 999px;
+  }
+  .upgrades::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(122,231,255,0.58), rgba(155,125,255,0.52));
+    border: 1px solid rgba(122,231,255,0.25);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(122,231,255,0.2);
+  }
+}
+</style>
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
@@ -804,6 +858,46 @@ function detectLang() {
   } catch (e) { currentLang = 'ru'; }
   document.documentElement.lang = currentLang;
 }
+
+
+/* Mobile shop scrolling: body uses touch-action:none, so we scroll the shop manually. */
+(function installMobileShopScroll() {
+  const scroller = document.getElementById('shop');
+  if (!scroller) return;
+
+  let drag = null;
+
+  scroller.addEventListener('touchstart', (e) => {
+    if (isGamePaused()) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    drag = {
+      y: t.clientY,
+      scrollTop: scroller.scrollTop,
+      moved: false
+    };
+  }, { passive: true });
+
+  scroller.addEventListener('touchmove', (e) => {
+    if (!drag) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+
+    const dy = t.clientY - drag.y;
+    if (Math.abs(dy) > 4) drag.moved = true;
+
+    scroller.scrollTop = drag.scrollTop - dy;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  const end = () => {
+    drag = null;
+  };
+
+  scroller.addEventListener('touchend', end, { passive: true });
+  scroller.addEventListener('touchcancel', end, { passive: true });
+})();
+
 function applyStaticLanguage() {
   document.querySelector('h1').textContent = t('title');
   document.querySelector('.sub').textContent = t('subtitle');
