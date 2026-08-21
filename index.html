@@ -1142,7 +1142,7 @@ html, body {
       <button class="offline-ad" id="offlineClaimAd" type="button">Удвоить награду за рекламу!</button>
     </div>
   </div>
-</div><script>const UPGRADES = [ { id: "probe", name: "Зонд", desc: "+1 к клику", base: 15, type: "click", value: 1, sat: "sat-probe", satMax: 8 }, { id: "laser", name: "Лазерный бур", desc: "+5 к клику", base: 120, type: "click", value: 5, sat: "sat-laser", satMax: 4 }, { id: "drone", name: "Дроны-сборщики", desc: "+1 пыли в секунду", base: 40, type: "auto", value: 1, sat: "sat-drone", satMax: 8 }, { id: "station", name: "Орбитальная станция", desc: "+8 пыли в секунду", base: 350, type: "auto", value: 8, sat: "sat-station", satMax: 3 }, { id: "reactor", name: "Звёздный реактор", desc: "+40 пыли в секунду", base: 2200, type: "auto", value: 40, sat: "sat-reactor", satMax: 2 }, { id: "gate", name: "Врата гиперпространства", desc: "+250 пыли в секунду", base: 18000, type: "auto", value: 250, sat: "sat-gate", satMax: 2 } ]; const ERAS = [ { stage: 0, name: "Астероид" }, { stage: 1, name: "Каменистый мир", minEarned: 10000 }, { stage: 2, name: "Живая планета", minEarned: 100000 }, { stage: 3, name: "Ледяная колония", minDarkMatter: 1 }, { stage: 4, name: "Газовый гигант", minDarkMatter: 2, minEarned: 1000000 }, { stage: 5, name: "Космическая станция", minDarkMatter: 3, minEarned: 5000000 } ]; const MISSIONS = [
+</div><script>const UPGRADES = [ { id: "probe", name: "Зонд", desc: "+1 к клику", base: 100, type: "click", value: 1, sat: "sat-probe", satMax: 8 }, { id: "laser", name: "Лазерный бур", desc: "+5 к клику", base: 120, type: "click", value: 5, sat: "sat-laser", satMax: 4 }, { id: "drone", name: "Дроны-сборщики", desc: "+1 пыли в секунду", base: 40, type: "auto", value: 1, sat: "sat-drone", satMax: 8 }, { id: "station", name: "Орбитальная станция", desc: "+8 пыли в секунду", base: 350, type: "auto", value: 8, sat: "sat-station", satMax: 3 }, { id: "reactor", name: "Звёздный реактор", desc: "+40 пыли в секунду", base: 2200, type: "auto", value: 40, sat: "sat-reactor", satMax: 2 }, { id: "gate", name: "Врата гиперпространства", desc: "+250 пыли в секунду", base: 18000, type: "auto", value: 250, sat: "sat-gate", satMax: 2 } ]; const ERAS = [ { stage: 0, name: "Астероид" }, { stage: 1, name: "Каменистый мир", minEarned: 10000 }, { stage: 2, name: "Живая планета", minEarned: 100000 }, { stage: 3, name: "Ледяная колония", minDarkMatter: 1 }, { stage: 4, name: "Газовый гигант", minDarkMatter: 2, minEarned: 1000000 }, { stage: 5, name: "Космическая станция", minDarkMatter: 3, minEarned: 5000000 } ]; const MISSIONS = [
   { id: "clicks10", title: "Первый контакт", desc: "Сделай 10 кликов по планете", progress: s => s.clicks / 10, done: s => s.clicks >= 10, reward: 20 },
   { id: "probe1", title: "Разведка", desc: "Купи 1 зонд", progress: s => (s.levels.probe || 0) / 1, done: s => (s.levels.probe || 0) >= 1, reward: 35 },
   { id: "passive10", title: "Стабильный поток", desc: "Получи 10 пыли пассивным доходом", progress: s => s.passiveEarned / 10, done: s => s.passiveEarned >= 10, reward: 50 },
@@ -2495,6 +2495,588 @@ initYandex();
 })();
 </script>
 
+
+<!-- COSMIC CLICKER EXPANSION: events, signal, archive, instability -->
+<style id="cosmic-expansion-v1">
+.signal-panel,.archive-panel{margin:12px 0 0;padding:14px;border:1px solid rgba(122,231,255,.24);border-radius:18px;background:rgba(8,14,36,.42)}
+.signal-panel h3,.archive-panel h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#b9efff;margin:0 0 8px}
+.signal-row{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#b9c7de;font-size:13px;margin-bottom:8px}.signal-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.signal-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7ae7ff,#9b7dff);transition:width .35s ease}.signal-actions{display:flex;gap:8px;margin-top:10px}.signal-actions button{border:1px solid rgba(122,231,255,.32);border-radius:12px;background:rgba(122,231,255,.1);color:#dff8ff;padding:8px 10px;font:inherit;font-size:12px}
+.archive-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.archive-item{min-height:54px;border-radius:12px;border:1px solid rgba(122,231,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;filter:grayscale(1);opacity:.34}.archive-item.unlocked{filter:none;opacity:1;background:rgba(122,231,255,.08);box-shadow:0 0 18px rgba(122,231,255,.12)}.archive-count{font-size:12px;color:#9bb0d0;margin-bottom:8px}
+.instability{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:20050;padding:9px 14px;border-radius:999px;border:1px solid rgba(255,120,120,.5);background:rgba(60,8,18,.78);color:#ffd5d5;font-weight:800;letter-spacing:.04em;font-size:12px;opacity:0;pointer-events:none;transition:opacity .25s ease}.instability.show{opacity:1;animation:instPulse .9s ease-in-out infinite alternate}@keyframes instPulse{to{box-shadow:0 0 24px rgba(255,70,90,.48);transform:translateX(-50%) scale(1.025)}}
+</style>
+<script id="cosmic-expansion-v1">
+(() => {
+  const stateRef = () => (typeof state !== 'undefined' ? state : null);
+  const shop = document.getElementById('shop'); if (!shop) return;
+  const panel = document.createElement('section'); panel.className='signal-panel'; panel.innerHTML=`<h3>Расшифровка сигнала</h3><div class="signal-row"><span id="signalText">Сигнал: 0%</span><span id="signalFragment">Фрагменты: 0</span></div><div class="signal-bar"><i id="signalFill"></i></div><div class="signal-actions"><button id="signalAd" type="button">Ускорить +10% (реклама)</button></div><div id="signalStory" style="margin-top:10px;font-size:12px;color:#9bb0d0">Сигнал ещё слишком слабый.</div>`;
+  const archive = document.createElement('section'); archive.className='archive-panel'; archive.innerHTML=`<h3>Архив находок</h3><div class="archive-count" id="archiveCount">Открыто: 0/8</div><div class="archive-grid" id="archiveGrid"></div>`;
+  shop.insertAdjacentElement('afterend', archive); shop.insertAdjacentElement('afterend', panel);
+  const instability=document.createElement('div'); instability.className='instability'; document.body.appendChild(instability);
+  const finds=[['☄️','Комета'],['🛰️','Древний спутник'],['🪐','Аномальная планета'],['📡','Сигнал'],['🧊','Ледяной фрагмент'],['⚙️','Модуль'],['🧿','Артефакт'],['✨','Сверхновая']];
+  let ex={signal:0,fragments:0,finds:[],lastSignal:Date.now(),nextEvent:0};
+  try{Object.assign(ex,JSON.parse(localStorage.getItem('space-clicker-expansion')||'{}'));}catch(e){}
+  const save=()=>{try{localStorage.setItem('space-clicker-expansion',JSON.stringify(ex));}catch(e){}};
+  const grid=document.getElementById('archiveGrid');
+  function render(){
+    document.getElementById('signalText').textContent='Сигнал: '+Math.floor(ex.signal)+'%'; document.getElementById('signalFill').style.width=ex.signal+'%'; document.getElementById('signalFragment').textContent='Фрагменты: '+ex.fragments;
+    document.getElementById('signalStory').textContent=ex.signal>=100?'Сигнал расшифрован: «...ОНИ УЖЕ ЗДЕСЬ...»':ex.signal>=50?'В сигнале слышен новый фрагмент...':'Сигнал ещё слишком слабый.';
+    grid.innerHTML=finds.map((f,i)=>`<div class="archive-item ${ex.finds.includes(i)?'unlocked':''}" title="${ex.finds.includes(i)?f[1]:'Неизвестная находка'}">${f[0]}</div>`).join(''); document.getElementById('archiveCount').textContent='Открыто: '+ex.finds.length+'/'+finds.length;
+    const st=stateRef(); if(st){const pct=Math.min(100,Math.max(0,(st.earned/(typeof PRESTIGE_NEED!=='undefined'?PRESTIGE_NEED:500000))*100)); if(pct>=90&&pct<100){instability.textContent='⚠ КРИТИЧЕСКАЯ НЕСТАБИЛЬНОСТЬ: '+Math.floor(pct)+'%';instability.classList.add('show');document.body.classList.add('critical-instability');}else{instability.classList.remove('show');document.body.classList.remove('critical-instability');}}
+  }
+  function unlockRandom(){const pool=finds.map((_,i)=>i).filter(i=>!ex.finds.includes(i)); if(!pool.length)return; const id=pool[Math.floor(Math.random()*pool.length)]; ex.finds.push(id); save(); render(); if(typeof toast==='function')toast('Архив: открыта находка «'+finds[id][1]+'»');}
+  function addSignal(v){ex.signal=Math.min(100,ex.signal+v); if(ex.signal>=100&&ex.fragments===0){ex.fragments=1;unlockRandom(); if(typeof toast==='function')toast('Сигнал расшифрован! Получен сюжетный фрагмент.');} save();render();}
+  document.getElementById('signalAd').addEventListener('click',()=>{if(typeof showRewarded==='function')showRewarded(ok=>{if(ok)addSignal(10);else if(typeof toast==='function')toast('Реклама не просмотрена');});});
+  function meteorEvent(){const st=stateRef();if(!st||Date.now()<st.meteorUntil)return; if(Math.random()<=.15){st.meteorUntil=Date.now()+60000; if(typeof toast==='function')toast('☄️ Метеоритный дождь! Доход ×5 на 60 секунд'); unlockRandom();}}
+  ex.nextEvent=ex.nextEvent||Date.now()+300000+Math.random()*300000;
+  setInterval(()=>{const now=Date.now(); const minutes=(now-ex.lastSignal)/60000; if(minutes>=1){addSignal(Math.floor(minutes));ex.lastSignal+=Math.floor(minutes)*60000;save();} if(now>=ex.nextEvent){meteorEvent();ex.nextEvent=now+300000+Math.random()*300000;save();} render();},1000);
+  render();
+})();
+</script>
+
+
+<!-- UI implementation: signal/archive live outside the upgrade shop -->
+<style id="ui-spec-upgrade-v3">
+@media (min-width:769px){
+  .app{
+    grid-template-columns:minmax(0,1fr) minmax(500px,560px) !important;
+    gap:18px !important;
+  }
+  .shop{
+    width:100% !important;
+    min-width:0 !important;
+    padding:18px !important;
+  }
+  .shop h2{font-size:20px !important;margin-bottom:14px !important}
+  .upgrades{gap:12px !important;padding-right:6px !important}
+  .card{min-height:118px !important;padding:16px !important}
+  .card b{font-size:18px !important}
+  .card p,.lvl{font-size:13px !important}
+  .buy{min-height:48px !important;font-size:15px !important}
+
+  .mission-tools{
+    display:flex;
+    gap:8px;
+    align-items:stretch;
+    margin:0 0 12px;
+  }
+  .mission-tool-btn{
+    flex:1;
+    min-width:0;
+    height:42px;
+    border:1px solid rgba(122,231,255,.28);
+    border-radius:12px;
+    background:rgba(122,231,255,.07);
+    color:#b9efff;
+    font:inherit;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .mission-tool-btn:hover{
+    transform:translateY(-1px);
+    background:rgba(122,231,255,.13);
+    border-color:rgba(122,231,255,.55);
+    box-shadow:0 0 18px rgba(122,231,255,.08);
+  }
+  .mission-tool-btn:active{transform:scale(.98)}
+}
+
+/* Signal and archive are never left visible under the shop. */
+#utility-storage{
+  display:none !important;
+}
+
+.utility-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  padding:20px;
+  background:rgba(2,5,18,.78);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  align-items:center;
+  justify-content:center;
+}
+
+.utility-modal.show{
+  display:flex !important;
+}
+
+.utility-modal .modal-card{
+  position:relative;
+  width:min(620px,94vw);
+  max-height:82vh;
+  overflow-y:auto;
+  padding:24px;
+  border-radius:24px;
+  border:1px solid rgba(122,231,255,.30);
+  background:linear-gradient(145deg,rgba(27,39,75,.98),rgba(8,13,33,.98));
+  box-shadow:0 20px 70px rgba(0,0,0,.6),0 0 30px rgba(122,231,255,.08);
+  animation:utilityOpen .28s cubic-bezier(.2,.8,.2,1);
+}
+
+.utility-content{
+  width:100%;
+}
+
+.utility-content .signal-panel,
+.utility-content .archive-panel{
+  display:block !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+}
+
+.utility-close{
+  position:absolute;
+  top:10px;
+  right:12px;
+  width:36px;
+  height:36px;
+  border:1px solid rgba(122,231,255,.28);
+  border-radius:50%;
+  background:rgba(8,14,34,.8);
+  color:#e7f5ff;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+  z-index:5;
+  transition:transform .18s ease,background .18s ease;
+}
+
+.utility-close:hover{
+  background:rgba(122,231,255,.12);
+}
+
+.utility-close:active{
+  transform:scale(.9);
+}
+
+@keyframes utilityOpen{
+  from{opacity:0;transform:translateY(18px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+@media (max-width:768px){
+  /* Existing mobile game layout remains untouched. */
+  .mission-tools{display:none !important;}
+
+  .utility-modal{
+    padding:12px;
+    align-items:flex-end;
+  }
+
+  .utility-modal .modal-card{
+    width:100%;
+    max-height:80dvh;
+    padding:20px 14px 18px;
+    border-radius:24px 24px 18px 18px;
+  }
+}
+</style>
+
+<script id="ui-spec-upgrade-v3">
+(function(){
+  const shop = document.querySelector('.shop') || document.getElementById('shop');
+  const mission = document.getElementById('mission');
+  const missionInfo = document.getElementById('missionInfo');
+  const signal = document.querySelector('.signal-panel');
+  const archive = document.querySelector('.archive-panel');
+
+  if(!shop) return;
+
+  /* Hidden parking place: panels are moved here whenever closed,
+     so they cannot take space below the upgrade shop. */
+  let storage = document.getElementById('utility-storage');
+  if(!storage){
+    storage = document.createElement('div');
+    storage.id = 'utility-storage';
+    document.body.appendChild(storage);
+  }
+
+  if(signal) storage.appendChild(signal);
+  if(archive) storage.appendChild(archive);
+
+  function closeUtility(modal){
+    const content = modal.querySelector('.utility-content');
+    if(content){
+      const panel = content.firstElementChild;
+      if(panel) storage.appendChild(panel);
+    }
+    modal.classList.remove('show');
+  }
+
+  function makeUtilityModal(id){
+    let modal = document.getElementById(id);
+    if(modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = id;
+    modal.className = 'modal utility-modal';
+    modal.innerHTML =
+      '<div class="modal-card">' +
+        '<button class="utility-close" type="button" aria-label="Закрыть">×</button>' +
+        '<div class="utility-content"></div>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('.utility-close').addEventListener('click', function(){
+      closeUtility(modal);
+    });
+
+    modal.addEventListener('click', function(e){
+      if(e.target === modal) closeUtility(modal);
+    });
+
+    return modal;
+  }
+
+  function openUtility(id, panel){
+    if(!panel) return;
+
+    const modal = makeUtilityModal(id);
+    const content = modal.querySelector('.utility-content');
+
+    if(panel.parentNode !== content){
+      content.appendChild(panel);
+    }
+
+    modal.classList.add('show');
+  }
+
+  /* Rebuild the three top controls exactly once. */
+  const oldTools = shop.querySelector('.mission-tools');
+  if(oldTools) oldTools.remove();
+
+  const tools = document.createElement('div');
+  tools.className = 'mission-tools';
+
+  function addButton(label, action){
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'mission-tool-btn';
+    button.textContent = label;
+    button.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      action();
+    });
+    tools.appendChild(button);
+  }
+
+  addButton('Миссия', function(){
+    if(typeof window.openMissionHint === 'function') window.openMissionHint();
+    else if(missionInfo) missionInfo.click();
+  });
+
+  if(signal){
+    addButton('Сигнал', function(){
+      openUtility('signalUtilityModal', signal);
+    });
+  }
+
+  if(archive){
+    addButton('Архив', function(){
+      openUtility('archiveUtilityModal', archive);
+    });
+  }
+
+  const anchor = shop.querySelector('.prestige-btn') || shop.querySelector('.upgrades');
+  if(anchor) shop.insertBefore(tools, anchor);
+  else shop.appendChild(tools);
+
+  /* Desktop mission click remains available exactly as before. */
+  if(mission){
+    mission.addEventListener('click', function(e){
+      if(window.innerWidth <= 768) return;
+      if(e.target.closest('.mission-info')) return;
+      if(typeof window.openMissionHint === 'function') window.openMissionHint();
+      else if(missionInfo) missionInfo.click();
+    });
+  }
+
+  /* Escape closes utility windows and parks their live panels again. */
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    document.querySelectorAll('.utility-modal.show').forEach(closeUtility);
+  });
+
+  /* If a modal is ever closed by external code, keep the panel out of the shop. */
+  window.addEventListener('resize', function(){
+    document.querySelectorAll('.utility-modal:not(.show) .utility-content').forEach(function(content){
+      const panel = content.firstElementChild;
+      if(panel) storage.appendChild(panel);
+    });
+  });
+})();
+</script>
+
+
+<style id="step1-remove-shop-mission">
+/* Step 1: remove only the large current-mission card from the upgrade shop.
+   The mission system and the separate "Миссия" button remain intact. */
+@media (min-width: 769px){
+  .shop > .mission{display:none !important;}
+}
+</style>
+
+<!-- Targeted fixes: mission close, sound placement, archive info -->
+<style id="targeted-user-fixes-v1">
+/* Only the mission close button: lock it into the card's top-right corner. */
+.mission-modal-card{position:relative !important;}
+.mission-modal-card .mission-close{
+  position:absolute !important;
+  top:14px !important;
+  right:14px !important;
+  left:auto !important;
+  bottom:auto !important;
+  margin:0 !important;
+  z-index:20 !important;
+}
+
+/* The sound button sits directly under the subtitle instead of floating over it. */
+.sound-under-sub{
+  position:static !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin-top:10px !important;
+  margin-left:0 !important;
+  width:48px !important;
+  height:48px !important;
+  flex:0 0 48px !important;
+  z-index:20 !important;
+}
+@media (max-width:768px){
+  .sound-under-sub{
+    width:44px !important;
+    height:44px !important;
+    flex-basis:44px !important;
+    margin-top:8px !important;
+  }
+}
+
+/* Archive title + explanation button. */
+.archive-title-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 8px;
+}
+.archive-title-row h3{
+  margin:0 !important;
+}
+.archive-info-btn{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  padding:0;
+  border-radius:50%;
+  border:1px solid rgba(122,231,255,.42);
+  background:rgba(122,231,255,.08);
+  color:#b9efff;
+  font:800 16px/1 inherit;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.archive-info-btn:hover{
+  background:rgba(122,231,255,.16);
+  box-shadow:0 0 16px rgba(122,231,255,.14);
+}
+.archive-info-btn:active{transform:scale(.92);}
+.archive-info-modal .modal-card{position:relative;}
+.archive-info-modal h3{margin:0 42px 10px 0;}
+.archive-info-modal p{margin:0 0 12px;line-height:1.55;color:#b9c7de;}
+.archive-info-modal ul{margin:0;padding-left:20px;color:#d9e8ff;line-height:1.6;}
+.archive-info-modal li+li{margin-top:6px;}
+.archive-info-close{
+  position:absolute !important;
+  top:14px !important;
+  right:14px !important;
+  left:auto !important;
+  width:34px;
+  height:34px;
+  border:1px solid rgba(122,231,255,.3);
+  border-radius:10px;
+  background:rgba(255,255,255,.04);
+  color:#dbe7ff;
+  font-size:20px;
+  cursor:pointer;
+}
+</style>
+
+<script id="targeted-user-fixes-v1">
+(function(){
+  /* Move the existing sound control directly below the subtitle.
+     Its original event listeners remain attached to the same element. */
+  const sound = document.getElementById('soundBtn');
+  const subtitle = document.querySelector('.hud .sub');
+  if(sound && subtitle && sound.parentNode !== subtitle.parentNode){
+    subtitle.insertAdjacentElement('afterend', sound);
+    sound.classList.add('sound-under-sub');
+  }
+
+  /* Archive explanation button, placed to the right of "АРХИВ НАХОДОК". */
+  const archive = document.querySelector('.archive-panel');
+  if(!archive) return;
+
+  const title = archive.querySelector('h3');
+  if(title && !archive.querySelector('.archive-info-btn')){
+    const row = document.createElement('div');
+    row.className = 'archive-title-row';
+    title.parentNode.insertBefore(row, title);
+    row.appendChild(title);
+
+    const info = document.createElement('button');
+    info.type = 'button';
+    info.className = 'archive-info-btn';
+    info.setAttribute('aria-label', 'Что такое архив находок');
+    info.textContent = '!';
+    row.appendChild(info);
+
+    let modal = document.getElementById('archiveInfoModal');
+    if(!modal){
+      modal = document.createElement('div');
+      modal.id = 'archiveInfoModal';
+      modal.className = 'modal archive-info-modal';
+      modal.innerHTML = `
+        <div class="modal-card">
+          <button class="archive-info-close" type="button" aria-label="Закрыть">×</button>
+          <h3>Архив находок</h3>
+          <p>Здесь хранятся редкие космические находки, которые ты уже обнаружил. Некоторые из них могли быть получены ранее и появляться в твоих отчётах.</p>
+          <p><b>Как получить новые находки:</b></p>
+          <ul>
+            <li>участвовать в редких космических событиях;</li>
+            <li>обнаруживать находки во время метеоритных событий;</li>
+            <li>продвигаться в расшифровке сигнала — за важные этапы можно открыть новую находку.</li>
+          </ul>
+        </div>`;
+      document.body.appendChild(modal);
+
+      const close = () => modal.classList.remove('show');
+      modal.querySelector('.archive-info-close').addEventListener('click', close);
+      modal.addEventListener('click', (e) => { if(e.target === modal) close(); });
+    }
+
+    info.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      modal.classList.add('show');
+    });
+  }
+})();
+</script>
+
+
+<!-- Final targeted correction: restore desktop frame position and keep archive help above all tabs -->
+<style id="final-targeted-correction-v2">
+/* Restore the desktop game frame to its previous vertical position, removing only the extra bottom gap. */
+@media (min-width:769px){
+  .app{ top:0 !important; }
+}
+
+/* Archive explanation must always sit above every game tab and panel. */
+#archiveInfoModal{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:999999 !important;
+}
+#archiveInfoModal.show{ display:grid !important; }
+#archiveInfoModal .modal-card{
+  position:relative !important;
+  z-index:1000000 !important;
+}
+#archiveInfoModal .archive-info-close{
+  position:absolute !important;
+  top:14px !important;
+  right:14px !important;
+  left:auto !important;
+}
+</style>
+
+
+<style id="final-space-layout-only-v1">
+/* Только последние изменения пользователя:
+   1) левая игровая зона без рамки;
+   2) реклама выше и полностью видна в левом нижнем углу. */
+
+@media (min-width: 769px) {
+  .left {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .reward-btn {
+    left: 16px !important;
+    right: auto !important;
+    bottom: 44px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .reward-btn {
+    left: 12px !important;
+    right: auto !important;
+    bottom: max(18px, env(safe-area-inset-bottom)) !important;
+  }
+}
+</style>
+
+
+<style id="satellites-behind-interface-v1">
+/* Спутники всегда остаются визуально за верхним интерфейсом. */
+.left .stage {
+  z-index: 1 !important;
+}
+
+.left .planet-wrap {
+  z-index: 1 !important;
+}
+
+.left .sat-orbit {
+  z-index: 1 !important;
+}
+
+.left .hud,
+.left .stats,
+.left .era,
+.left .sub,
+.left h1,
+.left .sound-btn {
+  position: relative !important;
+  z-index: 100 !important;
+}
+</style>
+
+
+<style id="sound-position-fix">
+/* Sound button: directly below the subtitle, aligned with its left edge. */
+@media (min-width: 769px) {
+  .sound-btn {
+    position: fixed !important;
+    top: -10px !important;
+    left: 0px !important;
+  }
+}
+@media (max-width: 768px) {
+  .sound-btn {
+    position: fixed !important;
+    top: 220px !important;
+    left: 47px !important;
+  }
+}
+</style>
 </body> </html>
 
 <style id="reward-label-dust-v1">
@@ -2530,4 +3112,114 @@ initYandex();
     opacity: 0.85;
   }
 }
+
+
+/* === ФИНАЛЬНЫЕ ПРАВКИ ИНТЕРФЕЙСА === */
+
+/* Звук: опускаем немного ниже, чтобы кнопка не пересекалась с подзаголовком */
+.sound-btn {
+  top: 22px !important;
+}
+
+/* Правая информационная колонка: каждая строка всегда остаётся целиком */
+.stats {
+  min-width: max-content !important;
+  white-space: nowrap !important;
+}
+.stats .score,
+.stats .rate,
+.stats .matter,
+.stats .era,
+.stats .era-progress,
+.stats .boost-tag {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+}
+.rate,
+.matter {
+  display: block;
+  width: 100%;
+  text-align: right;
+}
+
+/* Карточки апгрейдов: всё содержимое, включая цену, всегда находится внутри рамки */
+.card {
+  box-sizing: border-box !important;
+  min-height: 124px !important;
+  grid-template-rows: auto auto auto !important;
+  row-gap: 5px !important;
+  overflow: hidden !important;
+}
+.card p {
+  margin: 0 !important;
+  transform: translateY(-2px);
+}
+.card .buy {
+  margin-top: -2px !important;
+  align-self: start !important;
+  box-sizing: border-box !important;
+}
+
+/* Окно пояснения миссии: крестик выше текста и ни с чем не пересекается */
+.mission-modal-card {
+  padding-top: 48px !important;
+}
+.mission-close {
+  top: 8px !important;
+  right: 12px !important;
+  z-index: 5 !important;
+}
+.mission-modal-card h3 {
+  margin-top: 0 !important;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+  .sound-btn {
+    top: 0px !important;
+    left: 0px !important;
+  }
+
+  /* Строки статистики не переносятся */
+  .stats {
+    min-width: max-content !important;
+    max-width: none !important;
+  }
+  .rate,
+  .matter {
+    white-space: nowrap !important;
+    font-size: clamp(9px, 2.7vw, 12px) !important;
+  }
+
+  /* Полная карточка апгрейда всегда содержит название, уровень, описание и кнопку */
+  .card {
+    min-height: 122px !important;
+    padding: 12px 13px !important;
+    row-gap: 4px !important;
+  }
+  .card p {
+    margin: 0 !important;
+    transform: translateY(-2px);
+  }
+  .card .buy {
+    min-height: 44px !important;
+    margin-top: -2px !important;
+  }
+
+  /* Крестик остаётся в верхней части рамки, над текстом */
+  .mission-modal-card {
+    padding-top: 50px !important;
+  }
+  .mission-close {
+    top: 7px !important;
+    right: 12px !important;
+  }
+}
+.sound-btn {
+    position: fixed !important;
+    top: 0px !important;
+    left: -1px !important;
+}
+
 </style>
