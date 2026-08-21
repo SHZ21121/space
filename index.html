@@ -620,7 +620,7 @@ html, body {
   .planet-wrap {
     width: min(58vw, 30svh, 250px) !important;
     height: min(58vw, 30svh, 250px) !important;
-    margin: -12px 0 0 -12px !important;
+    margin: -18px 0 0 -18px !important;
   }
 
   /* The shop has a real touch-scroll area. */
@@ -629,8 +629,51 @@ html, body {
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
-    touch-action: none !important;
+    touch-action: pan-y !important;
     scrollbar-width: thin;
+  }
+
+  /* Balance the mission vertically: title at the top, progress line with equal breathing room. */
+  .mission {
+    padding-top: 11px !important;
+    padding-bottom: 12px !important;
+  }
+  .mission-head {
+    margin-bottom: 4px !important;
+  }
+  .mission .bar {
+    margin-top: 10px !important;
+  }
+
+  /* Mobile: lift the mission modal close button slightly above the title. */
+  .mission-modal-card .mission-close {
+    top: 6px !important;
+    right: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Compact, obvious rewarded-ad control; lifted above the mobile browser controls. */
+  .reward-btn {
+    left: auto !important;
+    right: 12px !important;
+    bottom: calc(54px + env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    min-width: 96px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 7px 12px !important;
+    border-radius: 12px !important;
+    font-size: 0 !important;
+    letter-spacing: 0.03em;
+    z-index: 99990 !important;
+  }
+  .reward-btn::after {
+    content: attr(data-mobile-label);
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 900;
+    white-space: nowrap;
   }
 
   .upgrades::-webkit-scrollbar { width: 8px; }
@@ -898,6 +941,53 @@ function detectLang() {
   scroller.addEventListener('touchcancel', end, { passive: true });
 })();
 
+
+/* Robust mobile shop swipe: allow finger swipes even though the page itself is locked from scrolling. */
+(function installRobustMobileShopSwipe() {
+  const scroller = document.getElementById('shop');
+  if (!scroller) return;
+
+  let gesture = null;
+
+  document.addEventListener('touchstart', (e) => {
+    if (window.innerWidth > 768 || isGamePaused()) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const target = e.target;
+    if (!(target.closest && target.closest('#shop'))) return;
+
+    gesture = {
+      y: t.clientY,
+      scrollTop: scroller.scrollTop,
+      moved: false,
+      startedInCard: !!(target.closest && target.closest('.card'))
+    };
+  }, { capture: true, passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!gesture || window.innerWidth > 768 || isGamePaused()) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+
+    const dy = t.clientY - gesture.y;
+    if (Math.abs(dy) > 5) gesture.moved = true;
+
+    /* Once the finger moves, treat the gesture as a scroll, not a purchase. */
+    if (gesture.moved) {
+      scroller.scrollTop = gesture.scrollTop - dy;
+      if (e.cancelable) e.preventDefault();
+    }
+  }, { capture: true, passive: false });
+
+  document.addEventListener('touchend', () => {
+    gesture = null;
+  }, { capture: true, passive: true });
+
+  document.addEventListener('touchcancel', () => {
+    gesture = null;
+  }, { capture: true, passive: true });
+})();
+
 function applyStaticLanguage() {
   document.querySelector('h1').textContent = t('title');
   document.querySelector('.sub').textContent = t('subtitle');
@@ -913,7 +1003,7 @@ function applyStaticLanguage() {
   elOfflineClaim.textContent = t('offlineBasic');
   elOfflineClaimAd.textContent = t('offlineAd');
   document.querySelector('#offlineModal h3').textContent = t('offlineTitle');
-  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad';
+  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad'; elReward.dataset.mobileLabel = currentLang === 'ru' ? 'РЕКЛАМА • ×2' : 'AD • ×2';
 }
 function formatOfflineDurationLocalized(seconds) {
   const total = Math.max(0, Math.floor(seconds));
