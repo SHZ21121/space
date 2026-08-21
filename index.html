@@ -2198,6 +2198,15 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
       return;
     }
     if (button) {
+      /* Utility buttons (Миссия / Сигнал / Архив) use their own click handlers.
+         Do not cancel their touchstart here, otherwise the browser never emits click. */
+      if (button.classList && (
+        button.classList.contains('mission-tool-btn') ||
+        button.classList.contains('utility-close')
+      )) {
+        return;
+      }
+
       const id = button.id;
       lastFastTouch = Date.now(); touchTriggeredAt = lastFastTouch; suppress(e);
       if (id === 'mobileShopOpen') {
@@ -2235,6 +2244,10 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
   }, { capture:true, passive:false });
   document.addEventListener('touchcancel', () => { cardTouch = null; }, { capture:true, passive:true });
   document.addEventListener('click', e => {
+    const utilityBtn = e.target && e.target.closest && e.target.closest('.mission-tool-btn');
+    if (utilityBtn) {
+      return;
+    }
     const btn = e.target && e.target.closest && e.target.closest('#mobileShopOpen');
     if (btn) {
       e.preventDefault();
@@ -3077,6 +3090,111 @@ initYandex();
   }
 }
 </style>
+
+
+<!-- MOBILE COMPLETE FEATURES PATCH -->
+<style id="mobile-complete-features-v1">
+@media (max-width:768px){
+  /* All desktop utility functions are available in the phone shop too. */
+  .mission-tools{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px !important;
+    width:100%;
+    margin:0 0 8px !important;
+    order:0;
+  }
+  .mission-tool-btn{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    min-width:0;
+    height:38px;
+    min-height:38px;
+    padding:7px 5px;
+    border:1px solid rgba(122,231,255,.28);
+    border-radius:11px;
+    background:rgba(122,231,255,.07);
+    color:#b9efff;
+    font:inherit;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    cursor:pointer;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mission-tool-btn:active{
+    transform:scale(.97);
+    background:rgba(122,231,255,.13);
+  }
+
+  /* Keep utility windows comfortably usable on small screens. */
+  .utility-modal{
+    z-index:999999 !important;
+    padding:10px !important;
+    align-items:flex-end !important;
+  }
+  .utility-modal .modal-card{
+    width:100% !important;
+    max-width:520px !important;
+    max-height:78dvh !important;
+    overflow-y:auto !important;
+    padding:18px 12px 16px !important;
+    border-radius:22px !important;
+  }
+  .utility-content .signal-panel,
+  .utility-content .archive-panel{
+    margin:0 !important;
+    padding:13px !important;
+  }
+  .signal-actions{margin-top:9px !important;}
+  .signal-actions button{
+    width:100%;
+    min-height:42px;
+    padding:9px 10px !important;
+    font-size:12px !important;
+    touch-action:manipulation;
+  }
+  .archive-grid{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:7px !important;}
+  .archive-item{min-height:52px !important;font-size:19px !important;}
+
+  /* Make the shop controls remain visible above the scrolling upgrades. */
+  .shop > h2,
+  .shop > .mission-tools,
+  .shop > .prestige-btn,
+  .shop > .mission{
+    flex:0 0 auto;
+  }
+
+  /* Preserve the existing phone scrollbar and leave room for it. */
+  .upgrades{padding-right:14px !important;}
+}
+</style>
+
+<script id="mobile-complete-features-v1">
+(function(){
+  function ready(){
+    if(window.innerWidth > 768) return;
+    const shop = document.querySelector('.shop');
+    if(!shop) return;
+
+    /* The desktop implementation already creates Mission / Signal / Archive buttons.
+       On mobile we only make those same controls visible and touch-friendly. */
+    const tools = shop.querySelector('.mission-tools');
+    if(tools){
+      tools.style.display = 'grid';
+      tools.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))';
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, {once:true});
+  else ready();
+  window.addEventListener('resize', ready);
+})();
+</script>
+
 </body> </html>
 
 <style id="reward-label-dust-v1">
@@ -3220,6 +3338,11 @@ initYandex();
     position: fixed !important;
     top: 0px !important;
     left: -1px !important;
+}
+@media (max-width: 768px) {
+  .shop > .mission {
+    display: none !important;
+  }
 }
 
 </style>
