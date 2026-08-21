@@ -499,7 +499,100 @@ html, body {
   }
 }
 </style>
-</head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
+
+<style id="mobile-polish-v3">
+/* Mobile polish: keep the controls clean and the planet fully visible. */
+.mobile-scrollbar { display: none; }
+@media (max-width: 768px) {
+  .left {
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  .stats {
+    position: relative !important;
+    z-index: 40 !important;
+  }
+
+  .stage {
+    position: relative !important;
+    z-index: 1 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .planet-wrap {
+    position: relative !important;
+    z-index: 8 !important;
+    width: min(60vw, 30dvh, 250px) !important;
+    height: min(60vw, 30dvh, 250px) !important;
+    margin: 0 34px 0 0 !important;
+  }
+
+  .sat-orbit,
+  .planet-ring,
+  .planet-station {
+    z-index: 5 !important;
+  }
+
+  .sound-btn {
+    position: fixed !important;
+    top: 140px !important;
+    left: 14px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+    z-index: 10001 !important;
+  }
+
+  .mobile-scrollbar {
+    display: block;
+    position: absolute;
+    right: 6px;
+    width: 8px;
+    border-radius: 999px;
+    background: rgba(10, 16, 42, 0.58);
+    border: 1px solid rgba(122, 231, 255, 0.12);
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.35), 0 0 8px rgba(122,231,255,0.08);
+    z-index: 30;
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  .mobile-scrollbar-thumb {
+    position: absolute;
+    left: 1px;
+    top: 0;
+    width: 4px;
+    min-height: 42px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #7ae7ff, #9b7dff);
+    box-shadow: 0 0 8px rgba(122,231,255,0.28);
+    touch-action: none;
+  }
+
+  .mobile-scrollbar.is-hidden {
+    display: none !important;
+  }
+
+  .upgrades {
+    padding-right: 14px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .upgrades::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+</style>
+</head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
     <h3>Космический отчет</h3>
@@ -758,8 +851,112 @@ const elOfflineModalText = document.getElementById("offlineModalText");
 const elOfflineRewardAmount = document.getElementById("offlineRewardAmount");
 const elOfflineClaim = document.getElementById("offlineClaim");
 const elOfflineClaimAd = document.getElementById("offlineClaimAd");
+const elMobileScrollbar = document.getElementById("mobileScrollbar");
+const elMobileScrollbarThumb = document.getElementById("mobileScrollbarThumb");
+let mobileScrollDragging = false;
+let mobileScrollDragStartY = 0;
+let mobileScrollStartTop = 0;
+
+function updateMobileScrollbar() {
+  if (!elMobileScrollbar || !elMobileScrollbarThumb) return;
+  if (window.innerWidth > 768) return;
+
+  const shopPanel = elMobileScrollbar.parentElement;
+  const trackTop = elShop.offsetTop;
+  const trackHeight = elShop.clientHeight;
+  const visible = elShop.clientHeight;
+  const total = elShop.scrollHeight;
+  const maxScroll = Math.max(0, total - visible);
+
+  elMobileScrollbar.style.top = trackTop + 'px';
+  elMobileScrollbar.style.height = trackHeight + 'px';
+
+  if (maxScroll <= 0) {
+    elMobileScrollbar.classList.add('is-hidden');
+    return;
+  }
+
+  elMobileScrollbar.classList.remove('is-hidden');
+
+  const minThumb = 42;
+  const thumbHeight = Math.max(
+    minThumb,
+    Math.round(trackHeight * (visible / total))
+  );
+
+  const travel = Math.max(0, trackHeight - thumbHeight);
+  const thumbTop = maxScroll > 0
+    ? (elShop.scrollTop / maxScroll) * travel
+    : 0;
+
+  elMobileScrollbarThumb.style.height = thumbHeight + 'px';
+  elMobileScrollbarThumb.style.transform = `translateY(${thumbTop}px)`;
+}
+
+function scrollFromMobileBar(clientY) {
+  const rect = elMobileScrollbar.getBoundingClientRect();
+  const trackHeight = rect.height;
+  const visible = elShop.clientHeight;
+  const total = elShop.scrollHeight;
+  const maxScroll = Math.max(0, total - visible);
+  const thumbHeight = elMobileScrollbarThumb.offsetHeight;
+  const travel = Math.max(1, trackHeight - thumbHeight);
+  const localY = Math.min(
+    travel,
+    Math.max(0, clientY - rect.top - thumbHeight / 2)
+  );
+
+  elShop.scrollTop = (localY / travel) * maxScroll;
+}
+
+function initMobileScrollbar() {
+  if (!elMobileScrollbar || !elMobileScrollbarThumb) return;
+
+  elShop.addEventListener('scroll', updateMobileScrollbar, { passive: true });
+  window.addEventListener('resize', updateMobileScrollbar);
+  window.addEventListener('orientationchange', () => setTimeout(updateMobileScrollbar, 80));
+
+  elMobileScrollbar.addEventListener('pointerdown', (e) => {
+    if (window.innerWidth > 768 || e.pointerType === 'mouse' || e.pointerType === 'touch' || e.isPrimary === false) return;
+    e.preventDefault();
+    elMobileScrollbar.setPointerCapture?.(e.pointerId);
+    scrollFromMobileBar(e.clientY);
+  });
+
+  elMobileScrollbarThumb.addEventListener('pointerdown', (e) => {
+    if (window.innerWidth > 768) return;
+    e.preventDefault();
+    e.stopPropagation();
+    mobileScrollDragging = true;
+    mobileScrollDragStartY = e.clientY;
+    mobileScrollStartTop = elShop.scrollTop;
+    elMobileScrollbarThumb.setPointerCapture?.(e.pointerId);
+  });
+
+  elMobileScrollbarThumb.addEventListener('pointermove', (e) => {
+    if (!mobileScrollDragging || window.innerWidth > 768) return;
+    e.preventDefault();
+
+    const trackHeight = elMobileScrollbar.clientHeight;
+    const thumbHeight = elMobileScrollbarThumb.offsetHeight;
+    const travel = Math.max(1, trackHeight - thumbHeight);
+    const maxScroll = Math.max(0, elShop.scrollHeight - elShop.clientHeight);
+    const delta = e.clientY - mobileScrollDragStartY;
+
+    elShop.scrollTop = mobileScrollStartTop +
+      (delta / travel) * maxScroll;
+  });
+
+  const stopDrag = () => {
+    mobileScrollDragging = false;
+  };
+
+  elMobileScrollbarThumb.addEventListener('pointerup', stopDrag);
+  elMobileScrollbarThumb.addEventListener('pointercancel', stopDrag);
+  setTimeout(updateMobileScrollbar, 0);
+}
 function format(n) { n = Math.floor(n); if (n >= 1e12) return (n / 1e12).toFixed(2) + " T"; if (n >= 1e9) return (n / 1e9).toFixed(2) + " B"; if (n >= 1e6) return (n / 1e6).toFixed(2) + " M"; if (n >= 1e4) return (n / 1e3).toFixed(1) + " K"; return String(n); } function costOf(u) { return Math.floor(u.base * Math.pow(1.18, state.levels[u.id])); } function totalLevels() { return UPGRADES.reduce((sum, u) => sum + (state.levels[u.id] || 0), 0); }
-function autoLevels() { return UPGRADES.filter(u => u.type === "auto").reduce((sum, u) => sum + (state.levels[u.id] || 0), 0); } function currentEra() { let era = ERAS[0]; for (const item of ERAS) { const earnedReady = item.minEarned == null || state.earned >= item.minEarned; const matterReady = item.minDarkMatter == null || state.darkMatter >= item.minDarkMatter; if (earnedReady && matterReady) era = item; } return era; } function prestigeMult() { return 1 + state.darkMatter * 0.5; } function meteorMult() { return Date.now() < state.meteorUntil ? 5 : 1; } function clickValue() { return state.clickPower * prestigeMult() * meteorMult(); } function autoValue() { return state.auto * prestigeMult(); } function addDust(amount) { if (amount <= 0) return 0; state.score += amount; state.earned += amount; return amount; } function recalc() { state.clickPower = 1; state.auto = 0; for (const u of UPGRADES) { const lvl = state.levels[u.id] || 0; if (u.type === "click") state.clickPower += u.value * lvl; else state.auto += u.value * lvl; } } function ensureAudio() { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return null; if (!audioCtx) { audioCtx = new Ctx(); masterGain = audioCtx.createGain(); masterGain.connect(audioCtx.destination); } if (audioCtx.state === "suspended") audioCtx.resume(); syncMasterGain(); return audioCtx; } function syncMasterGain() { if (!masterGain) return; masterGain.gain.value = (!state.soundOn || adActive) ? 0 : 0.28; } function tone(freq, dur, type, vol, at) { if (!state.soundOn || adActive || !ensureAudio()) return; const t = audioCtx.currentTime + (at || 0); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(Math.max(0.0001, vol), t); gain.gain.exponentialRampToValueAtTime(0.0001, t + dur); osc.connect(gain); gain.connect(masterGain); osc.start(t); osc.stop(t + dur + 0.02); } function sfxClick() { tone(690 + Math.random() * 90, 0.06, "square", 0.07); tone(1240, 0.045, "sine", 0.035); } function sfxBuy() { tone(392, 0.1, "sine", 0.09); tone(523, 0.12, "triangle", 0.08, 0.07); tone(784, 0.18, "sine", 0.07, 0.14); } function sfxWin() { tone(523, 0.16, "triangle", 0.1); tone(659, 0.16, "triangle", 0.1, 0.09); tone(784, 0.18, "triangle", 0.11, 0.18); tone(1046, 0.28, "sine", 0.1, 0.28); } function renderHud() { elScore.textContent = format(state.score); const click = clickValue(); const auto = autoValue(); elRate.textContent = `+${format(auto)} / сек · +${format(click)} / клик`; const bonus = Math.round((prestigeMult() - 1) * 100); elMatter.textContent = `Тёмная материя: ${state.darkMatter} · бонус +${bonus}%`; const left = Math.max(0, state.meteorUntil - Date.now()); elBoost.classList.toggle("on", left > 0); if (left > 0) elBoost.textContent = "Метеоритный дождь x5 · " + Math.ceil(left / 1000) + "с"; document.body.classList.toggle("meteor", left > 0); elPrestige.classList.toggle("show", state.earned >= PRESTIGE_NEED); elSound.textContent = state.soundOn ? "🔊" : "🔇"; } function renderShop() { if (!shopReady) { elShop.innerHTML = UPGRADES.map(u => ` <article class="card" data-id="${u.id}"> <b>${u.name}</b> <span class="lvl">ур. 0</span> <p>${u.desc}</p> <div class="buy">Купить · ${format(costOf(u))}</div> </article>`).join(""); shopReady = true; } for (const u of UPGRADES) { const card = elShop.querySelector(`.card[data-id="${u.id}"]`); if (!card) continue; const cost = costOf(u); const can = state.score >= cost; card.classList.toggle("can", can); card.classList.toggle("cant", !can); card.querySelector(".lvl").textContent = "ур. " + state.levels[u.id]; card.querySelector(".buy").textContent = "Купить · " + format(cost); } } function addSat(u, animate) { const index = elSats.children.length; const radius = 8 + (index % 5) * 7; const duration = 14 + (index % 7) * 4; const orbit = document.createElement("div"); orbit.className = "sat-orbit"; orbit.dataset.type = u.id; orbit.style.animationDuration = duration + "s"; orbit.style.animationDelay = -(index * 1.35) + "s"; orbit.innerHTML = `<div class="sat ${u.sat}"></div>`; elSats.appendChild(orbit); if (animate) { orbit.style.inset = "-120%"; requestAnimationFrame(() => { orbit.style.transition = "inset 1.15s cubic-bezier(0.16, 0.86, 0.28, 1)"; orbit.style.inset = "-" + radius + "%"; }); } else { orbit.style.inset = "-" + radius + "%"; } } function renderSats(animateNew) { const wanted = {}; for (const u of UPGRADES) wanted[u.id] = Math.min(state.levels[u.id] || 0, u.satMax); for (const u of UPGRADES) { const have = elSats.querySelectorAll(`[data-type="${u.id}"]`).length; const need = wanted[u.id]; for (let i = have; i < need; i++) addSat(u, animateNew); for (let i = have; i > need; i--) { const nodes = elSats.querySelectorAll(`[data-type="${u.id}"]`); if (nodes.length) nodes[nodes.length - 1].remove(); } } } function renderPlanet() { const era = currentEra(); elPlanet.dataset.stage = String(era.stage); elEra.textContent = "Звание: " + era.name; } function renderMission() { if (state.missionIndex >= MISSIONS.length) { elMissionText.textContent = "Все миссии выполнены. Ты легенда орбиты."; elMissionBar.style.width = "100%"; return; } const m = MISSIONS[state.missionIndex]; elMissionText.textContent = m.title + ": " + m.desc; elMissionBar.style.width = Math.min(100, Math.max(0, m.progress(state) * 100)) + "%"; } function openMissionHint() { const m = MISSIONS[state.missionIndex]; if (!m) { elMissionModalTitle.textContent = "Все миссии выполнены"; elMissionModalSummary.textContent = "Ты прошёл всю цепочку испытаний."; elMissionModalDetail.textContent = "Новые миссии появятся только в следующей версии игры."; } else { const progress = Math.min(100, Math.max(0, m.progress(state) * 100)); elMissionModalTitle.textContent = m.title; elMissionModalSummary.textContent = m.desc; elMissionModalDetail.textContent = (MISSION_HINTS[m.id] || "Выполни указанную цель текущей миссии.") + ` Текущий прогресс: ${Math.floor(progress)}%. Награда: ${format(m.reward)} пыли.`; } elMissionModal.classList.add("show"); } function checkMissions() { while (state.missionIndex < MISSIONS.length && MISSIONS[state.missionIndex].done(state)) { const m = MISSIONS[state.missionIndex]; state.missionIndex += 1; if (m.reward) addDust(m.reward); sfxWin(); toast(m.reward ? ("Миссия: " + m.title + " · +" + format(m.reward)) : ("Миссия: " + m.title)); } renderMission(); } function render() { renderHud(); renderShop(); renderPlanet(); renderSats(false); renderMission(); } function toast(text) { elToast.textContent = text; elToast.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => elToast.classList.remove("show"), 1600); } function spawnPop(x, y, amount) { const node = document.createElement("div"); node.className = "pop"; node.textContent = "+" + format(amount); node.style.left = x + "px"; node.style.top = y + "px"; node.style.setProperty("--drift", ((Math.random() - 0.5) * 36).toFixed(1) + "px"); document.body.appendChild(node); setTimeout(() => node.remove(), 1000); } function shakePlanet() { const dx = (Math.random() - 0.5) * 14; const dy = (Math.random() - 0.5) * 14; elPlanet.animate([ { transform: "translate(0,0) scale(1)" }, { transform: `translate(${dx}px, ${dy}px) scale(0.955)` }, { transform: "translate(0,0) scale(1)" } ], { duration: 140, easing: "ease-out" }); } function banner(text) { const node = document.createElement("div"); node.className = "crit"; node.textContent = text; document.body.appendChild(node); setTimeout(() => node.remove(), 1400); } function clickPlanet(ev) { if (adActive) return; if (ev.target.closest && ev.target.closest(".comet")) return; ensureAudio(); const gain = clickValue(); addDust(gain); state.clicks += 1; const x = ev.clientX || window.innerWidth / 2; const y = ev.clientY || window.innerHeight / 2; spawnPop(x, y, gain); shakePlanet(); sfxClick(); renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave(); } function buy(id) { if (adActive) return; const u = UPGRADES.find(item => item.id === id); if (!u) return; const cost = costOf(u); if (state.score < cost) { toast("Не хватает звёздной пыли"); return; } if (state.score >= 50000 && state.score < 100000) state.economistFailed = true; state.score -= cost; state.levels[u.id] += 1; recalc(); renderHud(); renderShop(); renderPlanet(); renderSats(true); checkMissions(); sfxBuy(); toast(u.name + " улучшен"); scheduleSave(); if (u.id === EXPENSIVE_ID) showInterstitial(); } let lastTouchAt = 0; function markTouch() { lastTouchAt = Date.now(); } elPlanet.addEventListener("touchstart", (e) => { if (adActive) return; markTouch(); clickPlanet(e.changedTouches[0] || e); }, { passive: false }); elPlanet.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; clickPlanet(e); }); elShop.addEventListener("pointerdown", (e) => { const card = e.target.closest(".card"); if (!card || adActive) return; shopPtr = { id: card.dataset.id, x: e.clientX, y: e.clientY, pointerId: e.pointerId }; }); elShop.addEventListener("pointerup", (e) => { if (!shopPtr || shopPtr.pointerId !== e.pointerId) return; const dx = e.clientX - shopPtr.x; const dy = e.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 64) return; buy(id); }); elShop.addEventListener("touchstart", (e) => { const touch = e.changedTouches[0]; const card = e.target.closest(".card"); if (!card || !touch || adActive) return; markTouch(); e.preventDefault(); shopPtr = { id: card.dataset.id, x: touch.clientX, y: touch.clientY, pointerId: "touch" }; }, { passive: false }); elShop.addEventListener("touchend", (e) => { if (!shopPtr || shopPtr.pointerId !== "touch") return; const touch = e.changedTouches[0]; if (!touch) return; const dx = touch.clientX - shopPtr.x; const dy = touch.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 100) return; e.preventDefault(); buy(id); }, { passive: false }); elShop.addEventListener("pointercancel", () => { shopPtr = null; }); function setAudioPaused(paused) { syncMasterGain(); document.querySelectorAll("audio, video").forEach((media) => { if (paused) { media.dataset.wasPlaying = media.paused ? "0" : "1"; media.pause(); } else if (media.dataset.wasPlaying === "1") { media.play().catch(() => {}); } }); } function setPaused(paused) { adActive = paused; document.body.classList.toggle("ad-paused", paused); setAudioPaused(paused); if (paused) { gameplay(false); } else { state.lastTick = Date.now(); gameplay(true); } } function tick() { if (adActive) { state.lastTick = Date.now(); return; } const now = Date.now(); const dt = Math.min(5, (now - state.lastTick) / 1000); state.lastTick = now; const passiveGain = autoValue() * dt; if (passiveGain > 0) { addDust(passiveGain); state.passiveEarned += passiveGain; } if (autoValue() >= 20) state.passiveStreakMs += dt * 1000; else state.passiveStreakMs = 0; renderHud(); renderShop(); renderPlanet(); checkMissions(); } setInterval(tick, 250); let cometCaught = false;
+function autoLevels() { return UPGRADES.filter(u => u.type === "auto").reduce((sum, u) => sum + (state.levels[u.id] || 0), 0); } function currentEra() { let era = ERAS[0]; for (const item of ERAS) { const earnedReady = item.minEarned == null || state.earned >= item.minEarned; const matterReady = item.minDarkMatter == null || state.darkMatter >= item.minDarkMatter; if (earnedReady && matterReady) era = item; } return era; } function prestigeMult() { return 1 + state.darkMatter * 0.5; } function meteorMult() { return Date.now() < state.meteorUntil ? 5 : 1; } function clickValue() { return state.clickPower * prestigeMult() * meteorMult(); } function autoValue() { return state.auto * prestigeMult(); } function addDust(amount) { if (amount <= 0) return 0; state.score += amount; state.earned += amount; return amount; } function recalc() { state.clickPower = 1; state.auto = 0; for (const u of UPGRADES) { const lvl = state.levels[u.id] || 0; if (u.type === "click") state.clickPower += u.value * lvl; else state.auto += u.value * lvl; } } function ensureAudio() { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return null; if (!audioCtx) { audioCtx = new Ctx(); masterGain = audioCtx.createGain(); masterGain.connect(audioCtx.destination); } if (audioCtx.state === "suspended") audioCtx.resume(); syncMasterGain(); return audioCtx; } function syncMasterGain() { if (!masterGain) return; masterGain.gain.value = (!state.soundOn || adActive) ? 0 : 0.28; } function tone(freq, dur, type, vol, at) { if (!state.soundOn || adActive || !ensureAudio()) return; const t = audioCtx.currentTime + (at || 0); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(Math.max(0.0001, vol), t); gain.gain.exponentialRampToValueAtTime(0.0001, t + dur); osc.connect(gain); gain.connect(masterGain); osc.start(t); osc.stop(t + dur + 0.02); } function sfxClick() { tone(690 + Math.random() * 90, 0.06, "square", 0.07); tone(1240, 0.045, "sine", 0.035); } function sfxBuy() { tone(392, 0.1, "sine", 0.09); tone(523, 0.12, "triangle", 0.08, 0.07); tone(784, 0.18, "sine", 0.07, 0.14); } function sfxWin() { tone(523, 0.16, "triangle", 0.1); tone(659, 0.16, "triangle", 0.1, 0.09); tone(784, 0.18, "triangle", 0.11, 0.18); tone(1046, 0.28, "sine", 0.1, 0.28); } function renderHud() { elScore.textContent = format(state.score); const click = clickValue(); const auto = autoValue(); elRate.textContent = `+${format(auto)} / сек · +${format(click)} / клик`; const bonus = Math.round((prestigeMult() - 1) * 100); elMatter.textContent = `Тёмная материя: ${state.darkMatter} · бонус +${bonus}%`; const left = Math.max(0, state.meteorUntil - Date.now()); elBoost.classList.toggle("on", left > 0); if (left > 0) elBoost.textContent = "Метеоритный дождь x5 · " + Math.ceil(left / 1000) + "с"; document.body.classList.toggle("meteor", left > 0); elPrestige.classList.toggle("show", state.earned >= PRESTIGE_NEED); elSound.textContent = state.soundOn ? "🔊" : "🔇"; } function renderShop() { if (!shopReady) { elShop.innerHTML = UPGRADES.map(u => ` <article class="card" data-id="${u.id}"> <b>${u.name}</b> <span class="lvl">ур. 0</span> <p>${u.desc}</p> <div class="buy">Купить · ${format(costOf(u))}</div> </article>`).join(""); shopReady = true; } for (const u of UPGRADES) { const card = elShop.querySelector(`.card[data-id="${u.id}"]`); if (!card) continue; const cost = costOf(u); const can = state.score >= cost; card.classList.toggle("can", can); card.classList.toggle("cant", !can); card.querySelector(".lvl").textContent = "ур. " + state.levels[u.id]; card.querySelector(".buy").textContent = "Купить · " + format(cost); } updateMobileScrollbar(); } function addSat(u, animate) { const index = elSats.children.length; const radius = 8 + (index % 5) * 7; const duration = 14 + (index % 7) * 4; const orbit = document.createElement("div"); orbit.className = "sat-orbit"; orbit.dataset.type = u.id; orbit.style.animationDuration = duration + "s"; orbit.style.animationDelay = -(index * 1.35) + "s"; orbit.innerHTML = `<div class="sat ${u.sat}"></div>`; elSats.appendChild(orbit); if (animate) { orbit.style.inset = "-120%"; requestAnimationFrame(() => { orbit.style.transition = "inset 1.15s cubic-bezier(0.16, 0.86, 0.28, 1)"; orbit.style.inset = "-" + radius + "%"; }); } else { orbit.style.inset = "-" + radius + "%"; } } function renderSats(animateNew) { const wanted = {}; for (const u of UPGRADES) wanted[u.id] = Math.min(state.levels[u.id] || 0, u.satMax); for (const u of UPGRADES) { const have = elSats.querySelectorAll(`[data-type="${u.id}"]`).length; const need = wanted[u.id]; for (let i = have; i < need; i++) addSat(u, animateNew); for (let i = have; i > need; i--) { const nodes = elSats.querySelectorAll(`[data-type="${u.id}"]`); if (nodes.length) nodes[nodes.length - 1].remove(); } } } function renderPlanet() { const era = currentEra(); elPlanet.dataset.stage = String(era.stage); elEra.textContent = "Звание: " + era.name; } function renderMission() { if (state.missionIndex >= MISSIONS.length) { elMissionText.textContent = "Все миссии выполнены. Ты легенда орбиты."; elMissionBar.style.width = "100%"; return; } const m = MISSIONS[state.missionIndex]; elMissionText.textContent = m.title + ": " + m.desc; elMissionBar.style.width = Math.min(100, Math.max(0, m.progress(state) * 100)) + "%"; } function openMissionHint() { const m = MISSIONS[state.missionIndex]; if (!m) { elMissionModalTitle.textContent = "Все миссии выполнены"; elMissionModalSummary.textContent = "Ты прошёл всю цепочку испытаний."; elMissionModalDetail.textContent = "Новые миссии появятся только в следующей версии игры."; } else { const progress = Math.min(100, Math.max(0, m.progress(state) * 100)); elMissionModalTitle.textContent = m.title; elMissionModalSummary.textContent = m.desc; elMissionModalDetail.textContent = (MISSION_HINTS[m.id] || "Выполни указанную цель текущей миссии.") + ` Текущий прогресс: ${Math.floor(progress)}%. Награда: ${format(m.reward)} пыли.`; } elMissionModal.classList.add("show"); } function checkMissions() { while (state.missionIndex < MISSIONS.length && MISSIONS[state.missionIndex].done(state)) { const m = MISSIONS[state.missionIndex]; state.missionIndex += 1; if (m.reward) addDust(m.reward); sfxWin(); toast(m.reward ? ("Миссия: " + m.title + " · +" + format(m.reward)) : ("Миссия: " + m.title)); } renderMission(); } function render() { renderHud(); renderShop(); renderPlanet(); renderSats(false); renderMission(); } function toast(text) { elToast.textContent = text; elToast.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => elToast.classList.remove("show"), 1600); } function spawnPop(x, y, amount) { const node = document.createElement("div"); node.className = "pop"; node.textContent = "+" + format(amount); node.style.left = x + "px"; node.style.top = y + "px"; node.style.setProperty("--drift", ((Math.random() - 0.5) * 36).toFixed(1) + "px"); document.body.appendChild(node); setTimeout(() => node.remove(), 1000); } function shakePlanet() { const dx = (Math.random() - 0.5) * 14; const dy = (Math.random() - 0.5) * 14; elPlanet.animate([ { transform: "translate(0,0) scale(1)" }, { transform: `translate(${dx}px, ${dy}px) scale(0.955)` }, { transform: "translate(0,0) scale(1)" } ], { duration: 140, easing: "ease-out" }); } function banner(text) { const node = document.createElement("div"); node.className = "crit"; node.textContent = text; document.body.appendChild(node); setTimeout(() => node.remove(), 1400); } function clickPlanet(ev) { if (adActive) return; if (ev.target.closest && ev.target.closest(".comet")) return; ensureAudio(); const gain = clickValue(); addDust(gain); state.clicks += 1; const x = ev.clientX || window.innerWidth / 2; const y = ev.clientY || window.innerHeight / 2; spawnPop(x, y, gain); shakePlanet(); sfxClick(); renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave(); } function buy(id) { if (adActive) return; const u = UPGRADES.find(item => item.id === id); if (!u) return; const cost = costOf(u); if (state.score < cost) { toast("Не хватает звёздной пыли"); return; } if (state.score >= 50000 && state.score < 100000) state.economistFailed = true; state.score -= cost; state.levels[u.id] += 1; recalc(); renderHud(); renderShop(); renderPlanet(); renderSats(true); checkMissions(); sfxBuy(); toast(u.name + " улучшен"); scheduleSave(); if (u.id === EXPENSIVE_ID) showInterstitial(); } let lastTouchAt = 0; function markTouch() { lastTouchAt = Date.now(); } elPlanet.addEventListener("touchstart", (e) => { if (adActive) return; markTouch(); clickPlanet(e.changedTouches[0] || e); }, { passive: false }); elPlanet.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; clickPlanet(e); }); elShop.addEventListener("pointerdown", (e) => { const card = e.target.closest(".card"); if (!card || adActive) return; shopPtr = { id: card.dataset.id, x: e.clientX, y: e.clientY, pointerId: e.pointerId }; }); elShop.addEventListener("pointerup", (e) => { if (!shopPtr || shopPtr.pointerId !== e.pointerId) return; const dx = e.clientX - shopPtr.x; const dy = e.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 64) return; buy(id); }); elShop.addEventListener("touchstart", (e) => { const touch = e.changedTouches[0]; const card = e.target.closest(".card"); if (!card || !touch || adActive) return; markTouch(); e.preventDefault(); shopPtr = { id: card.dataset.id, x: touch.clientX, y: touch.clientY, pointerId: "touch" }; }, { passive: false }); elShop.addEventListener("touchend", (e) => { if (!shopPtr || shopPtr.pointerId !== "touch") return; const touch = e.changedTouches[0]; if (!touch) return; const dx = touch.clientX - shopPtr.x; const dy = touch.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 100) return; e.preventDefault(); buy(id); }, { passive: false }); elShop.addEventListener("pointercancel", () => { shopPtr = null; }); function setAudioPaused(paused) { syncMasterGain(); document.querySelectorAll("audio, video").forEach((media) => { if (paused) { media.dataset.wasPlaying = media.paused ? "0" : "1"; media.pause(); } else if (media.dataset.wasPlaying === "1") { media.play().catch(() => {}); } }); } function setPaused(paused) { adActive = paused; document.body.classList.toggle("ad-paused", paused); setAudioPaused(paused); if (paused) { gameplay(false); } else { state.lastTick = Date.now(); gameplay(true); } } function tick() { if (adActive) { state.lastTick = Date.now(); return; } const now = Date.now(); const dt = Math.min(5, (now - state.lastTick) / 1000); state.lastTick = now; const passiveGain = autoValue() * dt; if (passiveGain > 0) { addDust(passiveGain); state.passiveEarned += passiveGain; } if (autoValue() >= 20) state.passiveStreakMs += dt * 1000; else state.passiveStreakMs = 0; renderHud(); renderShop(); renderPlanet(); checkMissions(); } setInterval(tick, 250); let cometCaught = false;
 
 function hideComet() {
   cometCaught = false;
@@ -1487,5 +1684,6 @@ function catchComet(ev) {
   renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave();
 }
 
+initMobileScrollbar();
 initYandex();
 </script></body> </html>
