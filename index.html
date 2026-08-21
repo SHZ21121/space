@@ -1084,6 +1084,54 @@ html, body {
 }
 </style>
 
+
+<style id="mobile-3d-satellites">
+/* The orbit keeps rotating continuously; the 3D tilt itself is animated separately.
+   That way opening/closing the shop never swaps animation modes abruptly. */
+@property --orbit-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@property --orbit-tilt {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@media (max-width: 768px) {
+  .app .planet-wrap {
+    perspective: 900px;
+    transform-style: preserve-3d;
+  }
+
+  .app .sat-orbit {
+    transform-style: preserve-3d;
+    transform: rotateX(var(--orbit-tilt, 0deg)) rotateZ(var(--orbit-angle, 0deg));
+    animation: orbitAngle linear infinite;
+    will-change: transform, z-index;
+    transition: --orbit-tilt .85s cubic-bezier(.22,.8,.2,1);
+  }
+
+  .app .sat {
+    transform: translate(-50%, -50%) scale(var(--sat-depth-scale, 1));
+    opacity: var(--sat-depth-opacity, 1);
+    filter: blur(var(--sat-depth-blur, 0px));
+    will-change: transform, opacity, filter;
+    transition: transform .42s cubic-bezier(.22,.8,.2,1), opacity .42s ease, filter .42s ease;
+  }
+
+  .app.mobile-shop-hidden .sat-orbit {
+    --orbit-tilt: 66deg;
+  }
+}
+
+@keyframes orbitAngle {
+  from { --orbit-angle: 0deg; }
+  to   { --orbit-angle: 360deg; }
+}
+</style>
+
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button" data-mobile-label="Реклама" aria-label="Реклама для удвоения пыли">Реклама</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
@@ -2372,6 +2420,68 @@ initYandex();
   modal.addEventListener('pointerdown', (e) => {
     if (e.target === modal) close();
   });
+})();
+</script>
+
+<script id="mobile-3d-satellites-js">
+(function installMobile3DSatellites() {
+  const app = document.querySelector('.app');
+  const planet = document.getElementById('planet');
+  const sats = document.getElementById('sats');
+  if (!app || !planet || !sats) return;
+
+  let raf = 0;
+
+  function resetSatDepth() {
+    sats.querySelectorAll('.sat-orbit').forEach((orbit) => {
+      orbit.style.zIndex = '5';
+      const sat = orbit.querySelector('.sat');
+      if (!sat) return;
+      sat.style.setProperty('--sat-depth-scale', '1');
+      sat.style.setProperty('--sat-depth-opacity', '1');
+      sat.style.setProperty('--sat-depth-blur', '0px');
+    });
+  }
+
+  function updateSatDepth(now) {
+    const fullScreen = window.innerWidth <= 768 && app.classList.contains('mobile-shop-hidden');
+    if (!fullScreen) {
+      resetSatDepth();
+      // Keep the 3D tilt animation CSS-driven so every orbit returns smoothly
+      // to the flat clockwise path as the shop comes back.
+      raf = 0;
+      return;
+    }
+
+    sats.querySelectorAll('.sat-orbit').forEach((orbit) => {
+      const duration = parseFloat(orbit.style.animationDuration) || 18;
+      const delay = parseFloat(orbit.style.animationDelay) || 0;
+      const phase = ((((now / 1000) - delay) % duration) + duration) % duration / duration;
+      const angle = phase * 360;
+      const radians = angle * Math.PI / 180;
+      const depth = (1 - Math.cos(radians)) / 2;
+
+      // Bottom half = slightly in front; top half = slightly behind the planet.
+      orbit.style.zIndex = depth > 0.5 ? '6' : '1';
+
+      const sat = orbit.querySelector('.sat');
+      if (!sat) return;
+      sat.style.setProperty('--sat-depth-scale', (0.88 + depth * 0.18).toFixed(3));
+      sat.style.setProperty('--sat-depth-opacity', (0.72 + depth * 0.28).toFixed(3));
+      sat.style.setProperty('--sat-depth-blur', ((1 - depth) * 0.45).toFixed(2) + 'px');
+    });
+
+    raf = requestAnimationFrame(updateSatDepth);
+  }
+
+  function start() {
+    if (!raf) raf = requestAnimationFrame(updateSatDepth);
+  }
+
+  const observer = new MutationObserver(start);
+  observer.observe(app, { attributes: true, attributeFilter: ['class'] });
+  window.addEventListener('resize', start);
+  start();
 })();
 </script>
 
