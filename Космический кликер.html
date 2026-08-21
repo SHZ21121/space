@@ -1,0 +1,1491 @@
+<!DOCTYPE html> <html lang="ru"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"> <title>Космический кликер</title> <script src="https://yandex.ru/games/sdk/v2"></script><style>:root { --bg-0: #050714; --bg-1: #0b1230; --cyan: #7ae7ff; --violet: #9b7dff; --gold: #ffd56a; --pink: #ff7ad9; --panel: rgba(10, 16, 42, 0.72); --stroke: rgba(122, 231, 255, 0.28); --text: #eef6ff; --muted: #9bb0d0; } * { box-sizing: border-box; margin: 0; padding: 0; } html, body { height: 100%; overflow: hidden; background: var(--bg-0); color: var(--text); font-family: "Segoe UI", "Trebuchet MS", sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; } #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; } body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(1200px 700px at 20% 10%, rgba(91, 54, 255, 0.28), transparent 55%), radial-gradient(900px 600px at 90% 80%, rgba(0, 180, 255, 0.18), transparent 50%), radial-gradient(700px 500px at 50% 50%, rgba(255, 90, 180, 0.08), transparent 60%); z-index: 0; animation: nebula 18s ease-in-out infinite alternate; } body.meteor::before { filter: hue-rotate(40deg) saturate(1.4); } @keyframes nebula { from { filter: hue-rotate(0deg) saturate(1); } to { filter: hue-rotate(28deg) saturate(1.2); } } .app { position: relative; z-index: 1; height: 100%; display: grid; grid-template-columns: 1fr minmax(280px, 380px); gap: 16px; padding: 16px; } .left, .shop { background: var(--panel); border: 1px solid var(--stroke); border-radius: 24px; backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.08); } .left { display: flex; flex-direction: column; padding: 18px; min-width: 0; } .hud { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; } h1 { font-size: clamp(20px, 3vw, 32px); letter-spacing: 0.08em; text-transform: uppercase; background: linear-gradient(90deg, #fff, var(--cyan), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; } .sub { color: var(--muted); font-size: 13px; margin-top: 4px; } .stats { text-align: right; display: flex; flex-direction: column; align-items: flex-end; min-width: 0; } .score { font-size: clamp(26px, 4vw, 42px); font-weight: 800; color: var(--gold); text-shadow: 0 0 18px rgba(255, 213, 106, 0.45); } .rate { color: var(--cyan); font-size: 14px; margin-top: 4px; } .matter { margin-top: 6px; font-size: 12px; color: #c5b6ff; text-shadow: 0 0 10px rgba(155, 125, 255, 0.6); } .boost-tag { display: none; margin-top: 6px; font-size: 12px; font-weight: 800; color: #ffb36a; letter-spacing: 0.08em; text-transform: uppercase; } .boost-tag.on { display: block; } .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: visible; } .planet-wrap { position: relative; z-index: 10; width: min(58vmin, 420px); height: min(58vmin, 420px); cursor: pointer; will-change: transform; } .planet { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; z-index: 2; transition: background 0.8s ease, box-shadow 0.8s ease, border-radius 0.8s ease, filter 0.8s ease; } .planet::before, .planet::after { content: ""; position: absolute; pointer-events: none; transition: opacity 0.8s ease, background 0.8s ease; } .planet-wrap[data-stage="0"] .planet { border-radius: 42% 58% 47% 53% / 48% 42% 58% 52%; background: radial-gradient(circle at 30% 28%, #c9b8a4 0 8%, transparent 9%), radial-gradient(circle at 62% 70%, #5a4a3a 0 10%, transparent 12%), radial-gradient(circle at 38% 36%, #8a7a68, #4a4036 55%, #1c1814 100%); box-shadow: 0 0 18px rgba(140, 120, 90, 0.25), inset -22px -16px 36px rgba(0,0,0,0.55); } .planet-wrap[data-stage="0"] .planet::before { inset: 22% 18% auto 28%; height: 18%; border-radius: 50%; background: rgba(0,0,0,0.28); } .planet-wrap[data-stage="1"] .planet { border-radius: 46% 54% 48% 52% / 50% 46% 54% 50%; background: radial-gradient(circle at 28% 26%, #ffe0c4 0 5%, transparent 6%), radial-gradient(circle at 70% 62%, #8a3a22 0 12%, transparent 14%), radial-gradient(circle at 32% 30%, #d88a5a, #8a3b24 42%, #3a1a12 100%); box-shadow: 0 0 28px rgba(200, 90, 40, 0.35), inset -26px -18px 44px rgba(20, 6, 0, 0.55); } .planet-wrap[data-stage="2"] .planet { background: radial-gradient(circle at 30% 26%, #fff 0 5%, transparent 6%), radial-gradient(circle at 62% 58%, #1f7a3a 0 16%, transparent 18%), radial-gradient(circle at 28% 70%, #1f7a3a 0 10%, transparent 12%), radial-gradient(circle at 32% 30%, #9fe7ff, #2f6bdc 38%, #12306a 100%); box-shadow: 0 0 36px rgba(70, 170, 255, 0.4), inset -28px -18px 50px rgba(8, 10, 40, 0.5); } .planet-wrap[data-stage="2"] .planet::before { inset: 18% -20% auto; height: 22%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent); transform: rotate(-18deg); } .planet-wrap[data-stage="3"] .planet { background: radial-gradient(circle at 28% 24%, #fff 0 6%, transparent 7%), radial-gradient(circle at 68% 40%, rgba(122,231,255,0.35) 0 14%, transparent 16%), radial-gradient(circle at 30% 30%, #e8fbff, #6ad2ff 36%, #2a5cff 62%, #0b1a55 100%); box-shadow: 0 0 44px rgba(122, 231, 255, 0.5), inset -28px -18px 50px rgba(8, 10, 50, 0.55); } .planet-wrap[data-stage="3"] .planet::after { inset: 0; background: repeating-linear-gradient(115deg, transparent 0 18px, rgba(255,255,255,0.08) 18px 20px); opacity: 0.45; } .planet-wrap[data-stage="4"] .planet { background: radial-gradient(circle at 30% 24%, #fff 0 5%, transparent 6%), repeating-linear-gradient(18deg, #5b3dff 0 8%, #9b7dff 8% 14%, #3d1e88 14% 20%), radial-gradient(circle at 40% 30%, #c9b6ff, #6a3dff 50%, #16083a 100%); box-shadow: 0 0 52px rgba(155, 125, 255, 0.55), inset -30px -20px 54px rgba(10, 0, 30, 0.55); } .planet-wrap[data-stage="4"] .planet-ring, .planet-wrap[data-stage="5"] .planet-ring { opacity: 1; } .planet-wrap[data-stage="5"] .planet { background: radial-gradient(circle at 28% 22%, #fff 0 5%, transparent 6%), radial-gradient(circle at 70% 30%, rgba(255,213,106,0.45) 0 10%, transparent 12%), repeating-conic-gradient(from 20deg, rgba(122,231,255,0.16) 0 8deg, transparent 8deg 16deg), radial-gradient(circle at 34% 32%, #d9f6ff, #4aa8ff 34%, #2a1b88 58%, #07071c 100%); box-shadow: 0 0 60px rgba(122, 231, 255, 0.6), 0 0 90px rgba(255, 213, 106, 0.18), inset -30px -20px 54px rgba(0, 0, 20, 0.6); } .planet-wrap[data-stage="5"] .planet::after { inset: 0; background: radial-gradient(circle at 38% 58%, rgba(255,213,106,0.55) 0 2px, transparent 3px), radial-gradient(circle at 62% 42%, rgba(122,231,255,0.8) 0 1.5px, transparent 3px), radial-gradient(circle at 48% 36%, rgba(255,255,255,0.9) 0 1px, transparent 2px), radial-gradient(circle at 55% 70%, rgba(255,122,217,0.7) 0 1.5px, transparent 3px); opacity: 1; } .planet-wrap[data-stage="5"] .planet-station { opacity: 1; } .planet-ring { position: absolute; inset: 18% -22%; border: 10px solid rgba(220, 200, 140, 0.28); border-left-color: transparent; border-right-color: transparent; border-radius: 50%; transform: rotate(-18deg); pointer-events: none; opacity: 0; z-index: 3; transition: opacity 0.8s ease; box-shadow: 0 0 18px rgba(255, 213, 106, 0.2); } .planet-station { position: absolute; inset: -8%; pointer-events: none; opacity: 0; z-index: 4; transition: opacity 0.8s ease; } .planet-station span { position: absolute; background: linear-gradient(90deg, #9adfff, #fff); box-shadow: 0 0 10px #7ae7ff; } .planet-station span:nth-child(1) { width: 28%; height: 7px; top: 18%; left: -6%; transform: rotate(-18deg); border-radius: 4px; } .planet-station span:nth-child(2) { width: 22%; height: 6px; bottom: 22%; right: -4%; transform: rotate(24deg); border-radius: 4px; } .planet-station span:nth-child(3) { width: 14px; height: 14px; top: 12%; right: 18%; border-radius: 3px; background: var(--gold); } .sat-orbit { position: absolute; inset: -8%; pointer-events: none; z-index: 5; animation: spin linear infinite; } .sat { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); } .sat-probe { width: 10px; height: 10px; border-radius: 50%; background: #d9e7ff; box-shadow: 0 0 10px #fff, 4px 0 0 1px #7ae7ff; } .sat-laser { width: 16px; height: 5px; border-radius: 2px; background: linear-gradient(90deg, #ff7ad9, #fff); box-shadow: 0 0 12px #ff7ad9; } .sat-drone { width: 9px; height: 9px; border-radius: 2px; background: #7ae7ff; box-shadow: 0 0 10px #7ae7ff, -6px 0 0 -2px #fff, 6px 0 0 -2px #fff; } .sat-station { width: 18px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #9b7dff, #fff); box-shadow: 0 0 12px #9b7dff; } .sat-reactor { width: 12px; height: 12px; border-radius: 50%; background: #ffd56a; box-shadow: 0 0 16px #ffd56a; } .sat-gate { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #ffd56a; box-shadow: 0 0 14px #ffd56a, inset 0 0 8px #7ae7ff; } @keyframes spin { to { transform: rotate(360deg); } } body.ad-paused .sat-orbit, body.ad-paused .planet-ring, body.ad-paused .comet.fly { animation-play-state: paused; } .era { position: static; display: inline-flex; align-items: center; justify-content: center; align-self: flex-end; margin-top: 6px; color: var(--muted); font-size: 11px; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; padding: 5px 10px; border: 1px solid rgba(122,231,255,0.18); border-radius: 999px; background: rgba(8,12,32,0.46); box-shadow: 0 0 18px rgba(122,231,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06); z-index: 10; } .pop { position: absolute; pointer-events: none; z-index: 12; font-weight: 800; font-size: 22px; color: #ffe08a; text-shadow: 0 0 6px #ffd56a, 0 0 16px #ff9b4a, 0 0 28px rgba(255, 213, 106, 0.9); animation: floatUp 1s ease-out forwards; } @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1.2); filter: brightness(1.4); } 55% { opacity: 0.9; transform: translate(calc(-50% + var(--drift, 0px)), -58px) scale(0.82); } 100% { opacity: 0; transform: translate(calc(-50% + var(--drift, 0px)), -96px) scale(0.42); } } .crit { position: fixed; left: 50%; top: 18%; z-index: 13; pointer-events: none; font-size: clamp(22px, 4vw, 36px); font-weight: 900; letter-spacing: 0.08em; color: #fff; text-shadow: 0 0 18px #ff7ad9, 0 0 36px #7ae7ff, 0 0 8px #fff; animation: critPop 1.35s ease-out forwards; } @keyframes critPop { 0% { opacity: 0; transform: translateX(-50%) scale(0.6); } 18% { opacity: 1; transform: translateX(-50%) scale(1.08); } 70% { opacity: 1; transform: translateX(-50%) scale(1); } 100% { opacity: 0; transform: translateX(-50%) translateY(-24px) scale(0.9); } } 
+.comet {
+  position: fixed;
+  z-index: 9999;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  display: none;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  will-change: transform, filter, opacity;
+  filter: drop-shadow(0 0 7px rgba(255,213,106,0.92));
+}
+.comet.fly {
+  display: block;
+  animation: cometFly 8.5s linear forwards;
+}
+.comet-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #fff8cf 32%, #ffd56a 68%, #ff9b4a 100%);
+  box-shadow:
+    0 0 5px #fff,
+    0 0 10px #ffd56a,
+    0 0 18px rgba(255,213,106,0.9);
+}
+.comet-core::before {
+  content: "";
+  position: absolute;
+  width: 48px;
+  height: 6px;
+  left: -43px;
+  top: 2.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,155,74,0.08), rgba(255,213,106,0.25), rgba(255,255,255,0.88));
+  filter: blur(1.2px);
+}
+.comet-core::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 0 8px rgba(255,213,106,0.55);
+  animation: cometPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes cometPulse {
+  from { transform: scale(0.88); opacity: 0.58; }
+  to { transform: scale(1.08); opacity: 0.95; }
+}
+@keyframes cometFly {
+  0% {
+    transform: translate(var(--x1), var(--y1)) rotate(var(--angle));
+    opacity: 0;
+    filter: brightness(0.84) drop-shadow(0 0 3px rgba(255,213,106,0.3));
+  }
+  7% {
+    opacity: 1;
+    filter: brightness(1.08) drop-shadow(0 0 8px rgba(255,213,106,0.82));
+  }
+  50% {
+    filter: brightness(1.16) drop-shadow(0 0 12px rgba(255,213,106,0.9));
+  }
+  93% { opacity: 1; }
+  100% {
+    transform: translate(var(--x2), var(--y2)) rotate(var(--angle));
+    opacity: 0;
+    filter: brightness(0.9) drop-shadow(0 0 4px rgba(255,213,106,0.45));
+  }
+}
+.comet-burst {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  z-index: 13;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff 0 16%, #fff6be 26%, #ffd56a 46%, transparent 72%);
+  box-shadow: 0 0 18px #fff, 0 0 42px #ffd56a, 0 0 72px rgba(255,155,74,0.85);
+  animation: cometBurst 0.65s ease-out forwards;
+}
+.comet-burst::before,
+.comet-burst::after {
+  content: "";
+  position: absolute;
+  inset: -28px;
+  border: 2px solid rgba(255,213,106,0.72);
+  border-radius: 50%;
+  animation: cometRing 0.65s ease-out forwards;
+}
+.comet-burst::after {
+  inset: -12px;
+  border-color: rgba(255,255,255,0.82);
+  animation-delay: 0.04s;
+}
+@keyframes cometBurst {
+  0% { transform: scale(0.35); opacity: 0; }
+  20% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(2.25); opacity: 0; }
+}
+@keyframes cometRing {
+  0% { transform: scale(0.2); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.shop { display: flex; flex-direction: column; padding: 16px; overflow: hidden; } .shop h2 { font-size: 18px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px; } .mission, .prestige-btn { border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; } .mission { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; column-gap: 10px; border: 1px solid rgba(122, 231, 255, 0.28); background: rgba(122, 231, 255, 0.06); } .mission-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; } .mission b { font-size: 13px; color: var(--cyan); letter-spacing: 0.08em; text-transform: uppercase; } .mission p { grid-column: 2; color: var(--muted); font-size: 12px; margin: 0; padding: 0; min-width: 0; line-height: 1.35; } .mission-info { position: static; grid-column: 1; grid-row: 2; width: 24px; height: 24px; margin: 5px 0 0; align-self: center; justify-self: center; border: 1px solid rgba(122, 231, 255, 0.58); border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.18), rgba(122,231,255,0.08)); color: var(--cyan); display: grid; place-items: center; font-size: 12px; font-weight: 900; line-height: 1; cursor: pointer; box-shadow: 0 0 10px rgba(122,231,255,0.22), inset 0 0 10px rgba(122,231,255,0.08); transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease; touch-action: manipulation; z-index: 10; } .mission-info:hover, .mission-info:focus-visible { transform: scale(1.08); background: rgba(122,231,255,0.16); box-shadow: 0 0 16px rgba(122,231,255,0.42), inset 0 0 12px rgba(122,231,255,0.14); outline: none; } .mission .bar { grid-column: 1 / -1; height: 6px; margin-top: 8px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; } .mission .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--gold)); transition: width 0.25s ease; } .prestige-btn { display: none; width: 100%; border: 1px solid rgba(255, 122, 217, 0.45); background: linear-gradient(90deg, #6a2bff, #ff5ac8); color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 8px 24px rgba(155, 80, 255, 0.35); } .prestige-btn.show { display: block; } .upgrades { overflow: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; min-height: 0; flex: 1; } .card { border: 1px solid rgba(155, 125, 255, 0.25); background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border-radius: 16px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; cursor: pointer; touch-action: manipulation; } .card.can { border-color: rgba(122, 231, 255, 0.55); } .card b { font-size: 15px; pointer-events: none; } .card p { color: var(--muted); font-size: 12px; grid-column: 1 / -1; pointer-events: none; } .lvl { color: var(--pink); font-size: 12px; align-self: start; pointer-events: none; } .buy { grid-column: 1 / -1; border: 0; border-radius: 12px; padding: 10px 12px; font-weight: 700; pointer-events: none; color: #08101f; background: linear-gradient(90deg, var(--cyan), #b7ff7a); } .card.cant .buy { opacity: 0.38; background: #445; color: #cfd8e8; } .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: rgba(8, 12, 32, 0.9); border: 1px solid var(--stroke); color: var(--text); padding: 10px 16px; border-radius: 999px; opacity: 0; pointer-events: none; z-index: 14; transition: 0.25s ease; } .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); } .reward-btn { display: none; position: fixed; right: 20px; bottom: 24px; z-index: 6; border: 1px solid rgba(255, 213, 106, 0.45); border-radius: 999px; padding: 12px 18px; font-weight: 800; cursor: pointer; color: #1a1204; background: linear-gradient(90deg, var(--gold), #ff9b4a); box-shadow: 0 10px 30px rgba(255, 160, 40, 0.35); animation: rewardPulse 1.6s ease-in-out infinite; } .reward-btn.show { display: block; } @keyframes rewardPulse { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.04); } } .sound-btn { position: fixed; top: 14px; left: 14px; z-index: 15; width: 42px; height: 42px; border: 1px solid var(--stroke); border-radius: 12px; background: rgba(8, 12, 32, 0.82); color: var(--text); cursor: pointer; font-size: 18px; } .modal { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(2, 4, 16, 0.72); place-items: center; padding: 20px; } .modal.show { display: grid; } .modal-card { width: min(420px, 100%); background: #10183a; border: 1px solid var(--stroke); border-radius: 20px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.45); } .modal-card h3 { margin-bottom: 8px; } .modal-card p { color: var(--muted); font-size: 14px; line-height: 1.45; } .modal-actions { display: flex; gap: 8px; margin-top: 16px; } .modal-actions button { flex: 1; border: 0; border-radius: 12px; padding: 10px; font-weight: 800; cursor: pointer; } .ok { background: linear-gradient(90deg, #6a2bff, #ff5ac8); color: #fff; } .no { background: #2a3358; color: #dbe7ff; } .mission-modal-card { position: relative; overflow: hidden; background: radial-gradient(circle at 20% 10%, rgba(122,231,255,0.12), transparent 28%), radial-gradient(circle at 88% 85%, rgba(155,125,255,0.12), transparent 32%), #10183a; } .mission-modal-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(135deg, transparent 0 22px, rgba(122,231,255,0.025) 22px 24px); } .mission-close { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border: 1px solid rgba(122,231,255,0.25); border-radius: 10px; background: rgba(255,255,255,0.04); color: #dbe7ff; font-size: 20px; cursor: pointer; z-index: 1; } .mission-modal-card h3, .mission-modal-card p, .mission-modal-card .modal-actions { position: relative; z-index: 1; } .mission-detail { margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px solid rgba(122,231,255,0.15); background: rgba(255,255,255,0.03); color: #d9e8ff; font-size: 13px; line-height: 1.5; } body.ad-paused .planet-wrap, body.ad-paused .upgrades, body.ad-paused .prestige-btn { pointer-events: none; }
+.offline-modal .modal-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(122,231,255,0.16), transparent 28%),
+    radial-gradient(circle at 90% 85%, rgba(155,125,255,0.18), transparent 30%),
+    #10183a;
+  border: 1px solid rgba(255,213,106,0.42);
+  box-shadow: 0 0 22px rgba(122,231,255,0.14), 0 20px 70px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+  animation: offlineReportIn 0.38s ease-out both;
+}
+.offline-modal .modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(135deg, transparent 0 22px, rgba(122,231,255,0.025) 22px 24px);
+}
+.offline-modal h3, .offline-modal p, .offline-modal .offline-reward, .offline-modal .offline-actions {
+  position: relative;
+  z-index: 1;
+}
+.offline-modal h3 {
+  color: var(--gold);
+  text-shadow: 0 0 14px rgba(255,213,106,0.35);
+  padding-right: 6px;
+}
+.offline-modal p {
+  margin-top: 10px;
+}
+.offline-reward {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(122,231,255,0.18);
+  background: rgba(255,255,255,0.035);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+.offline-reward b {
+  color: var(--gold);
+  font-size: 19px;
+  text-shadow: 0 0 12px rgba(255,213,106,0.35);
+}
+.offline-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.offline-actions button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.offline-basic {
+  background: #2a3358;
+  color: #dbe7ff;
+  border: 1px solid rgba(122,231,255,0.18) !important;
+}
+.offline-ad {
+  background: linear-gradient(90deg, #6a2bff, #ff5ac8);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(155,80,255,0.28);
+}
+@keyframes offlineReportIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+ @media (max-width: 860px) { html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; } body { min-height: 100svh; } .app { min-height: 100svh; height: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px; } .left { min-height: min(68svh, 620px); flex: none; padding: 12px; border-radius: 20px; } .hud { gap: 8px; } h1 { font-size: clamp(18px, 5vw, 25px); } .sub { font-size: 11px; max-width: 54vw; } .stats { min-width: 100px; } .score { font-size: clamp(24px, 7vw, 34px); } .rate, .matter, .boost-tag { font-size: 11px; } .stage { min-height: 0; flex: 1; padding: 8px 0 34px; } .planet-wrap { width: min(70vw, 52svh, 320px); height: min(70vw, 52svh, 320px); } .era { bottom: 6px; font-size: 11px; } .shop { width: 100%; max-height: none; overflow: visible; padding: 12px; border-radius: 20px; flex: none; } .shop h2 { font-size: 16px; margin-bottom: 10px; } .mission, .prestige-btn { margin-bottom: 8px; } .mission { padding: 12px; grid-template-columns: 28px minmax(0, 1fr); column-gap: 9px; } .mission b { font-size: 13px; } .mission p { font-size: 13px; line-height: 1.35; padding-right: 0; } .mission-info { top: auto; right: auto; width: 26px; height: 26px; margin-top: 5px; transform: none; font-size: 12px; } .mission-info:hover, .mission-info:focus-visible { transform: scale(1.05); } .upgrades { max-height: 42svh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 0; gap: 8px; } .card { min-height: 112px; padding: 14px; border-radius: 16px; } .card b { font-size: 16px; } .card p { font-size: 13px; line-height: 1.35; } .lvl { font-size: 13px; } .buy { min-height: 46px; padding: 11px 14px; font-size: 14px; } .prestige-btn { min-height: 48px; font-size: 14px; } .reward-btn { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; min-height: 50px; border-radius: 16px; padding: 12px 18px; font-size: 14px; } .sound-btn { width: 46px; height: 46px; top: 10px; left: 10px; } .comet { width: 64px; height: 64px; margin: -32px 0 0 -32px; } .comet-core { width: 24px; height: 24px; } .comet-core::before { width: 150px; left: -132px; height: 24px; } .modal { padding: 12px; } .modal-card { width: min(94vw, 430px); padding: 18px; border-radius: 18px; } .modal-actions button { min-height: 46px; } } @media (max-width: 420px) { .app { padding: 8px; } .left { min-height: 64svh; } .planet-wrap { width: min(74vw, 48svh, 280px); height: min(74vw, 48svh, 280px); } .hud { align-items: center; } .sub { display: none; } .stats { min-width: 92px; } .upgrades { max-height: 46svh; } .card { min-height: 108px; } .modal-card h3 { font-size: 18px; padding-right: 34px; } } @media (orientation: landscape) and (max-width: 860px) { html, body { overflow: hidden; height: 100%; } .app { height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); grid-template-rows: 1fr; overflow: hidden; } .left { min-height: 0; } .shop { max-height: 100%; overflow: hidden; } }
+/* === Mobile touch / layer stabilization === */
+body::before { pointer-events: none !important; }
+.app, .left, .stage, .shop, .planet-wrap, .card, .prestige-btn, .mission-info, .sound-btn, .reward-btn, .offline-actions button {
+  position: relative;
+}
+.planet-wrap { z-index: 10 !important; touch-action: manipulation; }
+.shop { z-index: 5; }
+.card, .prestige-btn, .mission-info, .sound-btn, .reward-btn, .offline-actions button { z-index: 10; touch-action: manipulation; }
+.comet { z-index: 99999 !important; }
+.upgrades { position: relative; z-index: 10; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 768px) {
+  html, body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  .app {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .left {
+    width: 100%;
+    height: 50dvh !important;
+    min-height: 50dvh !important;
+    max-height: 50dvh !important;
+    flex: 0 0 50dvh !important;
+    padding: 10px !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .hud {
+    flex: 0 0 auto;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  h1 {
+    font-size: clamp(16px, 4.8vw, 24px) !important;
+    line-height: 1.05;
+  }
+
+  .sub {
+    font-size: clamp(9px, 2.8vw, 12px) !important;
+    line-height: 1.2;
+    max-width: 52vw;
+  }
+
+  .stats { min-width: 92px; }
+  .score { font-size: clamp(22px, 7vw, 34px) !important; line-height: 1; }
+  .rate, .matter, .boost-tag { font-size: clamp(9px, 2.7vw, 12px) !important; }
+
+  .stage {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    width: 100%;
+    padding: 4px 0 20px !important;
+    overflow: hidden !important;
+  }
+
+  .planet-wrap {
+    width: min(58vw, 34dvh, 280px) !important;
+    height: min(58vw, 34dvh, 280px) !important;
+    flex: 0 0 auto;
+  }
+
+  .era {
+    bottom: 4px !important;
+    font-size: clamp(9px, 2.8vw, 12px) !important;
+  }
+
+  .shop {
+    width: 100%;
+    height: 50dvh !important;
+    min-height: 50dvh !important;
+    max-height: 50dvh !important;
+    flex: 0 0 50dvh !important;
+    padding: 10px !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .shop h2 {
+    flex: 0 0 auto;
+    font-size: clamp(14px, 4vw, 18px) !important;
+    margin-bottom: 8px !important;
+  }
+
+  .mission {
+    flex: 0 0 auto;
+    min-height: 72px;
+    padding: 11px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .mission b { font-size: clamp(12px, 3.4vw, 14px) !important; }
+  .mission p { font-size: clamp(11px, 3.1vw, 13px) !important; line-height: 1.3 !important; }
+
+  .mission-info {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    float: right;
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 0 4px 8px !important;
+    transform: none !important;
+    font-size: 12px !important;
+    flex: 0 0 26px;
+  }
+
+  .mission-info:hover,
+  .mission-info:focus-visible {
+    transform: scale(1.04) !important;
+  }
+
+  .prestige-btn {
+    min-height: 46px;
+    flex: 0 0 auto;
+    font-size: 13px;
+    margin-bottom: 8px !important;
+  }
+
+  .upgrades {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 2px !important;
+    gap: 8px !important;
+    touch-action: pan-y !important;
+  }
+
+  .card {
+    flex: 0 0 auto;
+    min-height: 108px !important;
+    padding: 13px !important;
+    border-radius: 15px !important;
+  }
+
+  .card b { font-size: clamp(14px, 4vw, 17px) !important; }
+  .card p { font-size: clamp(11px, 3.2vw, 13px) !important; line-height: 1.3 !important; }
+  .lvl { font-size: clamp(11px, 3.2vw, 13px) !important; }
+  .buy { min-height: 46px !important; padding: 10px 12px !important; font-size: clamp(12px, 3.4vw, 14px) !important; }
+
+  .reward-btn {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    min-height: 48px !important;
+    padding: 11px 14px !important;
+    z-index: 9990 !important;
+  }
+
+  .sound-btn {
+    width: 44px !important;
+    height: 44px !important;
+    top: 8px !important;
+    left: 8px !important;
+  }
+
+  .offline-modal, .modal { z-index: 20000 !important; }
+  .modal-card { width: min(94vw, 430px); max-height: 88dvh; overflow-y: auto; }
+
+  .comet { z-index: 99999 !important; }
+}
+
+@media (max-width: 380px) {
+  .planet-wrap {
+    width: min(54vw, 30dvh, 230px) !important;
+    height: min(54vw, 30dvh, 230px) !important;
+  }
+  .card { min-height: 100px !important; }
+}
+
+/* Yandex Games moderation / mobile interaction hardening */
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden !important;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#stars { pointer-events: none !important; z-index: 0 !important; }
+.app { z-index: 1; }
+.planet-wrap, .card, .prestige-btn, .mission-info, .sound-btn, .reward-btn, .offline-actions button, .mission-close, .modal-actions button {
+  position: relative;
+  z-index: 10;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.comet { z-index: 99999 !important; }
+.offline-modal, .modal { z-index: 20000 !important; }
+.upgrades { touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+@media (max-width: 768px) {
+  .app { height: 100svh; min-height: 100svh; padding: 8px; gap: 8px; }
+  .left { min-height: 50svh; height: 50svh; padding: 10px; }
+  .shop { min-height: 50svh; height: 50svh; max-height: 50svh; overflow: hidden; padding: 10px; }
+  .stage { min-height: 0; }
+  .planet-wrap { width: min(62vw, 38svh, 280px); height: min(62vw, 38svh, 280px); }
+  .upgrades { flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
+  .card { min-height: 108px; padding: 13px; }
+  .buy { min-height: 44px; }
+  .mission-info { width: 28px; height: 28px; font-size: 13px; }
+  h1 { font-size: clamp(17px, 5vw, 24px); }
+  .score { font-size: clamp(24px, 7vw, 34px); }
+  .sub, .rate, .matter, .boost-tag { font-size: 10px; }
+}
+
+
+<style>
+/* Layout correction: the game board is centered in its own half. */
+.left { position: relative; }
+.stage { display: flex !important; align-items: center !important; justify-content: center !important; }
+.planet-wrap { z-index: 10 !important; }
+.era { z-index: 10 !important; }
+.mission { display: grid !important; align-items: center !important; }
+.mission-info { position: static !important; z-index: 10 !important; }
+@media (max-width: 768px) {
+  .left { height: 50dvh !important; min-height: 50dvh !important; max-height: 50dvh !important; }
+  .stage { height: calc(50dvh - 88px) !important; min-height: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+  .planet-wrap { margin: 0 !important; }
+  .era { top: 6px !important; bottom: auto !important; }
+  .mission { grid-template-columns: 28px minmax(0, 1fr) !important; align-items: center !important; }
+  .mission-info { width: 26px !important; height: 26px !important; min-width: 26px !important; min-height: 26px !important; transform: none !important; }
+  .mission p { grid-column: 2 !important; padding: 0 !important; margin: 0 !important; }
+  .mission .bar { grid-column: 1 / -1 !important; }
+}
+<style>@media (max-width: 768px) { .era { max-width: 100%; font-size: 9px; padding: 4px 8px; margin-top: 5px; } }
+/* === Neon scrollbar — game style === */
+.upgrades {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 231, 255, 0.34) transparent;
+}
+.upgrades::-webkit-scrollbar { width: 8px; }
+.upgrades::-webkit-scrollbar-track {
+  background: rgba(10, 16, 42, 0.34);
+  border-radius: 999px;
+}
+.upgrades::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(122, 231, 255, 0.48), rgba(155, 125, 255, 0.42));
+  border: 1px solid rgba(122, 231, 255, 0.22);
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(122, 231, 255, 0.18), inset 0 0 4px rgba(255, 255, 255, 0.08);
+}
+.upgrades::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(122, 231, 255, 0.68), rgba(155, 125, 255, 0.58));
+}
+.upgrades::-webkit-scrollbar-button, .upgrades::-webkit-scrollbar-corner { display: none; }
+
+</style>
+<style id="final-layout-fix">
+/* Final desktop layout correction */
+@media (min-width: 769px) {
+  .app {
+    top: -46px !important;
+  }
+  .sound-btn {
+    top: 136px !important;
+    left: 34px !important;
+    width: 48px !important;
+    height: 48px !important;
+    z-index: 10001 !important;
+  }
+}
+</style>
+
+<style id="era-progress-style">
+.era-progress {
+  display: block;
+  align-self: flex-end;
+  margin-top: 4px;
+  color: rgba(155, 176, 208, 0.82);
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-align: right;
+  white-space: nowrap;
+  min-height: 12px;
+  text-shadow: 0 0 8px rgba(122, 231, 255, 0.10);
+}
+@media (max-width: 768px) {
+  .era-progress {
+    font-size: 9px;
+    max-width: 44vw;
+    white-space: normal;
+  }
+}
+</style>
+</head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
+<div class="modal offline-modal" id="offlineModal">
+  <div class="modal-card">
+    <h3>Космический отчет</h3>
+    <p id="offlineModalText">—</p>
+    <div class="offline-reward" id="offlineRewardBox">Накоплено: <b id="offlineRewardAmount">0</b> пыли</div>
+    <div class="offline-actions">
+      <button class="offline-basic" id="offlineClaim" type="button">Забрать базовую пыль</button>
+      <button class="offline-ad" id="offlineClaimAd" type="button">Удвоить награду за рекламу!</button>
+    </div>
+  </div>
+</div><script>const UPGRADES = [ { id: "probe", name: "Зонд", desc: "+1 к клику", base: 15, type: "click", value: 1, sat: "sat-probe", satMax: 8 }, { id: "laser", name: "Лазерный бур", desc: "+5 к клику", base: 120, type: "click", value: 5, sat: "sat-laser", satMax: 4 }, { id: "drone", name: "Дроны-сборщики", desc: "+1 пыли в секунду", base: 40, type: "auto", value: 1, sat: "sat-drone", satMax: 8 }, { id: "station", name: "Орбитальная станция", desc: "+8 пыли в секунду", base: 350, type: "auto", value: 8, sat: "sat-station", satMax: 3 }, { id: "reactor", name: "Звёздный реактор", desc: "+40 пыли в секунду", base: 2200, type: "auto", value: 40, sat: "sat-reactor", satMax: 2 }, { id: "gate", name: "Врата гиперпространства", desc: "+250 пыли в секунду", base: 18000, type: "auto", value: 250, sat: "sat-gate", satMax: 2 } ]; const ERAS = [ { stage: 0, name: "Астероид" }, { stage: 1, name: "Каменистый мир", minEarned: 10000 }, { stage: 2, name: "Живая планета", minEarned: 100000 }, { stage: 3, name: "Ледяная колония", minDarkMatter: 1 }, { stage: 4, name: "Газовый гигант", minDarkMatter: 2, minEarned: 1000000 }, { stage: 5, name: "Космическая станция", minDarkMatter: 3, minEarned: 5000000 } ]; const MISSIONS = [
+  { id: "clicks10", title: "Первый контакт", desc: "Сделай 10 кликов по планете", progress: s => s.clicks / 10, done: s => s.clicks >= 10, reward: 20 },
+  { id: "probe1", title: "Разведка", desc: "Купи 1 зонд", progress: s => (s.levels.probe || 0) / 1, done: s => (s.levels.probe || 0) >= 1, reward: 35 },
+  { id: "passive10", title: "Стабильный поток", desc: "Получи 10 пыли пассивным доходом", progress: s => s.passiveEarned / 10, done: s => s.passiveEarned >= 10, reward: 50 },
+  { id: "upgrade1", title: "Первый апгрейд", desc: "Купи любое улучшение", progress: s => totalLevels() / 1, done: s => totalLevels() >= 1, reward: 60 },
+  { id: "earn1000", title: "Космический шахтёр", desc: "Добудь 1 000 пыли за забег", progress: s => s.earned / 1000, done: s => s.earned >= 1000, reward: 100 },
+  { id: "fleet3", title: "Маленький флот", desc: "Иметь 3 уровня улучшений", progress: s => totalLevels() / 3, done: s => totalLevels() >= 3, reward: 120 },
+  { id: "energy10", title: "Энергосистема", desc: "Достигни 10 пыли в секунду", progress: s => autoValue() / 10, done: s => autoValue() >= 10, reward: 250 },
+  { id: "industry5", title: "Промышленность", desc: "Купи 5 автоматических улучшений", progress: s => autoLevels() / 5, done: s => autoLevels() >= 5, reward: 350 },
+  { id: "station1", title: "Орбитальная база", desc: "Купи 1 орбитальную станцию", progress: s => (s.levels.station || 0), done: s => (s.levels.station || 0) >= 1, reward: 400 },
+  { id: "click10", title: "Ускорение", desc: "Достигни +10 к клику", progress: s => s.clickPower / 10, done: s => s.clickPower >= 10, reward: 450 },
+  { id: "earn10k", title: "Новая эра", desc: "Добудь 10 000 пыли за забег", progress: s => s.earned / 10000, done: s => s.earned >= 10000, reward: 600 },
+  { id: "earn25k", title: "Богатое месторождение", desc: "Добудь 25 000 пыли за забег", progress: s => s.earned / 25000, done: s => s.earned >= 25000, reward: 900 },
+  { id: "line50", title: "Производственная линия", desc: "Достигни 50 пыли в секунду", progress: s => autoValue() / 50, done: s => autoValue() >= 50, reward: 1000 },
+  { id: "engineer", title: "Инженер", desc: "Купи хотя бы по одному улучшению для клика и пассивного дохода", progress: s => (s.clickPower > 1 && s.auto > 0) ? 1 : 0, done: s => s.clickPower > 1 && s.auto > 0, reward: 1200 },
+  { id: "colonization", title: "Колонизация", desc: "Добудь 100 000 пыли за забег", progress: s => s.earned / 100000, done: s => s.earned >= 100000, reward: 2000 },
+  { id: "reactor", title: "Реактор запущен", desc: "Купи 1 звёздный реактор", progress: s => (s.levels.reactor || 0), done: s => (s.levels.reactor || 0) >= 1, reward: 2500 },
+  { id: "empire250", title: "Энергетическая империя", desc: "Достигни 250 пыли в секунду", progress: s => autoValue() / 250, done: s => autoValue() >= 250, reward: 3500 },
+  { id: "gate", title: "Гиперпространство", desc: "Купи 1 врата гиперпространства", progress: s => (s.levels.gate || 0), done: s => (s.levels.gate || 0) >= 1, reward: 5000 },
+  { id: "magnet", title: "Магнат", desc: "Добудь 500 000 пыли за забег", progress: s => s.earned / 500000, done: s => s.earned >= 500000, reward: 8000 },
+  { id: "titan", title: "Титан производства", desc: "Достигни 1 000 пыли в секунду", progress: s => autoValue() / 1000, done: s => autoValue() >= 1000, reward: 12000 },
+  { id: "lastFrontier", title: "Последний рубеж", desc: "Добудь 1 000 000 пыли за забег", progress: s => s.earned / 1000000, done: s => s.earned >= 1000000, reward: 20000 },
+  { id: "darkEra", title: "Тёмная эра", desc: "Выполни первый престиж", progress: s => s.darkMatter / 1, done: s => s.darkMatter >= 1, reward: 25000 },
+  { id: "rebirth", title: "Перерождение", desc: "Получи 2 единицы тёмной материи", progress: s => s.darkMatter / 2, done: s => s.darkMatter >= 2, reward: 50000 },
+  { id: "infinity", title: "Бесконечность", desc: "Получи 10 единиц тёмной материи", progress: s => s.darkMatter / 10, done: s => s.darkMatter >= 10, reward: 150000 },
+  { id: "oldSchool", title: "Кликер старой школы", desc: "Сделай 1 000 кликов", progress: s => s.clicks / 1000, done: s => s.clicks >= 1000, reward: 10000 },
+  { id: "automaticWorld", title: "Автоматический мир", desc: "Добудь 10 000 пыли только пассивным доходом", progress: s => s.passiveEarned / 10000, done: s => s.passiveEarned >= 10000, reward: 15000 },
+  { id: "economist", title: "Экономист", desc: "Накопи 100 000 пыли, не покупая улучшений после отметки 50 000", progress: s => (s.economistFailed ? 0 : s.score / 100000), done: s => !s.economistFailed && s.score >= 100000, reward: 20000 },
+  { id: "withoutStop", title: "Без остановки", desc: "Держи пассивный доход не ниже 20 пыли/сек 60 секунд", progress: s => s.passiveStreakMs / 60000, done: s => s.passiveStreakMs >= 60000, reward: 12000 },
+  { id: "prestige", title: "Сверхновая", desc: "Выполни престиж", progress: s => s.darkMatter / 1, done: s => s.darkMatter >= 1, reward: 0 }
+];
+
+const MISSION_HINTS = {
+  clicks10: "Нажимай на планету 10 раз. Каждый клик засчитывается отдельно.",
+  probe1: "Открой магазин и купи первый зонд. Он увеличивает силу ручного клика.",
+  passive10: "Купи автоматическое улучшение и дождись, пока пассивный доход принесёт первые 10 единиц пыли.",
+  upgrade1: "Подойдёт любое улучшение из магазина: зонд, лазер, дрон или более дорогой объект.",
+  earn1000: "Накопи суммарно 1 000 пыли за текущий забег. Засчитываются клики и пассивный доход.",
+  fleet3: "Купи любые три уровня улучшений. Можно смешивать разные улучшения.",
+  energy10: "Развивай автоматические улучшения, пока показатель дохода не станет минимум +10/сек.",
+  industry5: "Нужно купить всего пять уровней автоматических улучшений: дроны, станция, реактор или врата.",
+  station1: "Купи одну «Орбитальную станцию». Она даст +8 пыли в секунду и добавит объект на орбиту.",
+  click10: "Прокачивай ручные улучшения, пока сила одного клика не достигнет +10.",
+  earn10k: "Добудь 10 000 пыли за забег. Это также открывает первую серьёзную стадию эволюции планеты.",
+  earn25k: "Продолжай развивать станцию и накопи 25 000 пыли за текущий забег.",
+  line50: "Развивай автоматические улучшения до общего пассивного дохода +50/сек.",
+  engineer: "Нужен хотя бы один уровень улучшения для клика и хотя бы один уровень автоматического дохода.",
+  colonization: "Накопи 100 000 пыли за забег. Это долгосрочная цель, рассчитанная на несколько покупок апгрейдов.",
+  reactor: "Купи «Звёздный реактор». Он даёт большой прирост пассивного дохода.",
+  empire250: "Доведи суммарный пассивный доход до +250/сек. Используй реакторы и станции.",
+  gate: "Купи первые «Врата гиперпространства» — самое дорогое улучшение магазина.",
+  magnet: "Накопи 500 000 пыли за один забег. После этого станет доступен престиж.",
+  titan: "Развивай автоматическую экономику до +1 000/сек. Это одна из поздних целей игры.",
+  lastFrontier: "Добудь 1 000 000 пыли за забег. Не спеши тратить всё сразу — важен именно накопленный объём добычи.",
+  darkEra: "Накопи 500 000 пыли и выполни престиж. Ты получишь первую единицу тёмной материи.",
+  rebirth: "Сделай два престижа и получи 2 единицы тёмной материи.",
+  infinity: "Продолжай цикл престижа, пока не накопишь 10 единиц тёмной материи.",
+  oldSchool: "Просто кликай по планете. Улучшения не нужны — важен сам счётчик кликов.",
+  automaticWorld: "Пассивный доход должен суммарно принести 10 000 пыли. Ручные клики в этот прогресс не входят.",
+  economist: "Когда баланс впервые достигнет 50 000 пыли, перестань покупать улучшения. Накопи ещё до 100 000. Любая покупка после отметки 50 000 провалит миссию.",
+  withoutStop: "Держи пассивный доход не ниже +20/сек без перерыва 60 секунд. Если доход упадёт ниже 20/сек, отсчёт начнётся заново.",
+  prestige: "Накопи 500 000 пыли за текущий забег и используй кнопку «Сверхновая (Престиж)»."
+}; 
+/* === Localization, SDK pause and moderation utilities === */
+const LOCALE = { ru: 'ru', en: 'en' };
+let currentLang = 'ru';
+let sdkPaused = false;
+let gameStarted = false;
+let touchTriggeredAt = 0;
+
+const UI_TEXT = {
+  ru: {
+    title: 'Космический кликер', subtitle: 'Собирай звёздную пыль и развивай станцию',
+    shop: 'Магазин апгрейдов', mission: 'Миссия', eraPrefix: 'Звание: ',
+    buy: 'Купить', buyed: 'улучшен', notEnough: 'Не хватает звёздной пыли',
+    prestige: 'Сверхновая (Престиж)', prestigeTitle: 'Взорвать сверхновую?',
+    prestigeText: 'Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.',
+    cancel: 'Отмена', rebirth: 'Переродиться',
+    missionHint: 'Подсказка по миссии', allMissions: 'Все миссии выполнены. Ты легенда орбиты.',
+    missionNext: 'Новые миссии появятся только в следующей версии игры.',
+    offlineTitle: 'Космический отчет', offlineBasic: 'Забрать базовую пыль', offlineAd: 'Удвоить награду за рекламу!',
+    offlineSaved: 'Оффлайн-доход · +', dust: ' пыли', rewardedUnavailable: 'Видеореклама пока недоступна',
+    adNotWatched: 'Реклама не просмотрена — награда не удвоена', balanceDoubled: 'Баланс удвоен!',
+    darkMatter: (v,b) => `Тёмная материя: ${v} · бонус +${b}%`,
+    rate: (a,c) => `+${a} / сек · +${c} / клик`, meteor: s => `Метеоритный дождь x5 · ${s}с`,
+    cometCaught: v => `Комета поймана · +${v} пыли`, cometBanner: 'ЗОЛОТАЯ КОМЕТА ПОЙМАНА!',
+    sound: 'Звук', offlineNarrative: (duration, reward) => `Вас не было в сети ${duration}. За это время автоматические дроны и станции собрали для вас ${reward} космической пыли!`,
+    allRewards: 'Награда: '
+  },
+  en: {
+    title: 'Cosmic Clicker', subtitle: 'Collect stardust and develop your station',
+    shop: 'Upgrade Shop', mission: 'Mission', eraPrefix: 'Rank: ',
+    buy: 'Buy', buyed: 'upgraded', notEnough: 'Not enough stardust',
+    prestige: 'Supernova (Prestige)', prestigeTitle: 'Trigger the supernova?',
+    prestigeText: 'Your balance and upgrades will reset. You will gain 1 Dark Matter: all future income permanently increases by 50% for each unit.',
+    cancel: 'Cancel', rebirth: 'Rebirth',
+    missionHint: 'Mission hint', allMissions: 'All missions completed. You are an orbital legend.',
+    missionNext: 'New missions will appear in a future version of the game.',
+    offlineTitle: 'Cosmic Report', offlineBasic: 'Claim base dust', offlineAd: 'Double reward with ad!',
+    offlineSaved: 'Offline income · +', dust: ' dust', rewardedUnavailable: 'Rewarded video is not available',
+    adNotWatched: 'Ad was not completed — reward was not doubled', balanceDoubled: 'Balance doubled!',
+    darkMatter: (v,b) => `Dark Matter: ${v} · bonus +${b}%`,
+    rate: (a,c) => `+${a} / sec · +${c} / click`, meteor: s => `Meteor shower x5 · ${s}s`,
+    cometCaught: v => `Comet caught · +${v} dust`, cometBanner: 'GOLDEN COMET CAUGHT!',
+    sound: 'Sound', offlineNarrative: (duration, reward) => `You were away for ${duration}. During that time your drones and stations collected ${reward} stardust for you!`,
+    allRewards: 'Reward: '
+  }
+};
+
+const LOCALE_UPGRADES = {
+  probe: {ru:['Зонд','+1 к клику'], en:['Probe','+1 per click']},
+  laser: {ru:['Лазерный бур','+5 к клику'], en:['Laser Drill','+5 per click']},
+  drone: {ru:['Дроны-сборщики','+1 пыли в секунду'], en:['Collector Drones','+1 dust per second']},
+  station: {ru:['Орбитальная станция','+8 пыли в секунду'], en:['Orbital Station','+8 dust per second']},
+  reactor: {ru:['Звёздный реактор','+40 пыли в секунду'], en:['Star Reactor','+40 dust per second']},
+  gate: {ru:['Врата гиперпространства','+250 пыли в секунду'], en:['Hyperspace Gate','+250 dust per second']}
+};
+const LOCALE_ERAS = {
+  'Астероид': {ru:'Астероид', en:'Asteroid'}, 'Каменистый мир': {ru:'Каменистый мир', en:'Rocky World'},
+  'Живая планета': {ru:'Живая планета', en:'Living Planet'}, 'Ледяная колония': {ru:'Ледяная колония', en:'Ice Colony'},
+  'Газовый гигант': {ru:'Газовый гигант', en:'Gas Giant'}, 'Космическая станция': {ru:'Космическая станция', en:'Space Station'}
+};
+const LOCALE_MISSIONS = {
+  clicks10:['Первый контакт','Сделай 10 кликов по планете','First Contact','Make 10 clicks on the planet'],
+  probe1:['Разведка','Купи 1 зонд','Recon','Buy 1 probe'],
+  passive10:['Стабильный поток','Получи 10 пыли пассивным доходом','Steady Flow','Earn 10 dust from passive income'],
+  upgrade1:['Первый апгрейд','Купи любое улучшение','First Upgrade','Buy any upgrade'],
+  earn1000:['Космический шахтёр','Добудь 1 000 пыли за забег','Space Miner','Earn 1,000 dust in a run'],
+  fleet3:['Маленький флот','Иметь 3 уровня улучшений','Small Fleet','Own 3 upgrade levels'],
+  energy10:['Энергосистема','Достигни 10 пыли в секунду','Power System','Reach 10 dust per second'],
+  industry5:['Промышленность','Купи 5 автоматических улучшений','Industry','Buy 5 automatic upgrade levels'],
+  station1:['Орбитальная база','Купи 1 орбитальную станцию','Orbital Base','Buy 1 orbital station'],
+  click10:['Ускорение','Достигни +10 к клику','Acceleration','Reach +10 per click'],
+  earn10k:['Новая эра','Добудь 10 000 пыли за забег','New Era','Earn 10,000 dust in a run'],
+  earn25k:['Богатое месторождение','Добудь 25 000 пыли за забег','Rich Deposit','Earn 25,000 dust in a run'],
+  line50:['Производственная линия','Достигни 50 пыли в секунду','Production Line','Reach 50 dust per second'],
+  engineer:['Инженер','Купи хотя бы по одному улучшению для клика и пассивного дохода','Engineer','Buy at least one click upgrade and one passive-income upgrade'],
+  colonization:['Колонизация','Добудь 100 000 пыли за забег','Colonization','Earn 100,000 dust in a run'],
+  reactor:['Реактор запущен','Купи 1 звёздный реактор','Reactor Online','Buy 1 star reactor'],
+  empire250:['Энергетическая империя','Достигни 250 пыли в секунду','Energy Empire','Reach 250 dust per second'],
+  gate:['Гиперпространство','Купи 1 врата гиперпространства','Hyperspace','Buy 1 hyperspace gate'],
+  magnet:['Магнат','Добудь 500 000 пыли за забег','Dust Tycoon','Earn 500,000 dust in a run'],
+  titan:['Титан производства','Достигни 1 000 пыли в секунду','Production Titan','Reach 1,000 dust per second'],
+  lastFrontier:['Последний рубеж','Добудь 1 000 000 пыли за забег','Final Frontier','Earn 1,000,000 dust in a run'],
+  darkEra:['Тёмная эра','Выполни первый престиж','Dark Era','Complete your first prestige'],
+  rebirth:['Перерождение','Получи 2 единицы тёмной материи','Rebirth','Reach 2 Dark Matter'],
+  infinity:['Бесконечность','Получи 10 единиц тёмной материи','Infinity','Reach 10 Dark Matter'],
+  oldSchool:['Кликер старой школы','Сделай 1 000 кликов','Old School Clicker','Make 1,000 clicks'],
+  automaticWorld:['Автоматический мир','Добудь 10 000 пыли только пассивным доходом','Automatic World','Earn 10,000 dust from passive income only'],
+  economist:['Экономист','Накопи 100 000 пыли, не покупая улучшений после отметки 50 000','Economist','Reach 100,000 dust without buying upgrades after passing 50,000'],
+  withoutStop:['Без остановки','Держи пассивный доход не ниже 20 пыли/сек 60 секунд','No Breaks','Keep passive income at 20 dust/sec or higher for 60 seconds'],
+  prestige:['Сверхновая','Выполни престиж','Supernova','Complete a prestige']
+};
+const LOCALE_HINTS = {
+  clicks10:['Нажимай на планету 10 раз. Каждый клик засчитывается отдельно.','Click the planet 10 times. Each click counts separately.'],
+  probe1:['Открой магазин и купи первый зонд. Он увеличивает силу ручного клика.','Open the shop and buy your first probe. It increases click power.'],
+  passive10:['Купи автоматическое улучшение и дождись, пока пассивный доход принесёт первые 10 единиц пыли.','Buy an automatic upgrade and let passive income produce the first 10 dust.'],
+  upgrade1:['Подойдёт любое улучшение из магазина.','Any shop upgrade will complete this mission.'],
+  earn1000:['Накопи суммарно 1 000 пыли за текущий забег. Засчитываются клики и пассивный доход.','Earn 1,000 dust during the current run. Clicks and passive income both count.'],
+  fleet3:['Купи любые три уровня улучшений. Можно смешивать разные улучшения.','Buy any three upgrade levels. You can mix different upgrades.'],
+  energy10:['Развивай автоматические улучшения, пока показатель дохода не станет минимум +10/сек.','Upgrade automation until passive income reaches at least +10/sec.'],
+  industry5:['Нужно купить пять уровней автоматических улучшений.','Buy five levels of automatic upgrades.'],
+  station1:['Купи одну «Орбитальную станцию».','Buy one Orbital Station.'],
+  click10:['Прокачивай ручные улучшения, пока сила одного клика не достигнет +10.','Upgrade click power until one click is worth +10.'],
+  earn10k:['Добудь 10 000 пыли за забег. Это также открывает первую серьёзную стадию эволюции планеты.','Earn 10,000 dust in one run. This also unlocks the first major planet evolution.'],
+  earn25k:['Продолжай развивать станцию и накопи 25 000 пыли.','Keep developing the station and earn 25,000 dust.'],
+  line50:['Развивай автоматические улучшения до +50/сек.','Upgrade automation until passive income reaches +50/sec.'],
+  engineer:['Нужен хотя бы один уровень улучшения для клика и один уровень автоматического дохода.','Own at least one click upgrade and one automatic-income upgrade.'],
+  colonization:['Накопи 100 000 пыли за забег.','Earn 100,000 dust in one run.'],
+  reactor:['Купи «Звёздный реактор».','Buy a Star Reactor.'],
+  empire250:['Доведи суммарный пассивный доход до +250/сек.','Raise passive income to +250/sec.'],
+  gate:['Купи первые «Врата гиперпространства».','Buy your first Hyperspace Gate.'],
+  magnet:['Накопи 500 000 пыли за один забег. После этого станет доступен престиж.','Earn 500,000 dust in one run. Prestige becomes available after this.'],
+  titan:['Развивай автоматическую экономику до +1,000/сек.','Raise passive income to +1,000/sec.'],
+  lastFrontier:['Добудь 1,000,000 пыли за забег.','Earn 1,000,000 dust in one run.'],
+  darkEra:['Накопи 500 000 пыли и выполни престиж.','Reach 500,000 dust and complete a prestige.'],
+  rebirth:['Сделай два престижа и получи 2 единицы тёмной материи.','Complete two prestiges and reach 2 Dark Matter.'],
+  infinity:['Продолжай цикл престижа, пока не накопишь 10 единиц тёмной материи.','Keep prestiging until you reach 10 Dark Matter.'],
+  oldSchool:['Просто кликай по планете. Улучшения не нужны — важен сам счётчик кликов.','Keep clicking the planet. Upgrades are not required; the click count matters.'],
+  automaticWorld:['Пассивный доход должен суммарно принести 10 000 пыли.','Passive income must generate 10,000 dust in total.'],
+  economist:['После того как баланс впервые достигнет 50 000, не покупай улучшения до 100 000.','Once your balance first reaches 50,000, do not buy upgrades until you reach 100,000.'],
+  withoutStop:['Держи пассивный доход не ниже +20/сек без перерыва 60 секунд.','Keep passive income at or above +20/sec for 60 seconds without interruption.'],
+  prestige:['Накопи 500 000 пыли и используй кнопку престиж.','Reach 500,000 dust and use the prestige button.']
+};
+
+function t(key, ...args) { const v = UI_TEXT[currentLang][key]; return typeof v === 'function' ? v(...args) : v; }
+function localMission(m) {
+  const x = LOCALE_MISSIONS[m.id];
+  if (!x) return { title: m.title, desc: m.desc };
+  return currentLang === 'ru' ? { title:x[0], desc:x[1] } : { title:x[2], desc:x[3] };
+}
+function localHint(id) { const x = LOCALE_HINTS[id]; return x ? x[currentLang === 'ru' ? 0 : 1] : ''; }
+function localUpgrade(u) { const x = LOCALE_UPGRADES[u.id]; return x ? x[currentLang] : [u.name, u.desc]; }
+function localEraName(name) { return (LOCALE_ERAS[name] && LOCALE_ERAS[name][currentLang]) || name; }
+function detectLang() {
+  try {
+    const lang = ysdk?.environment?.i18n?.lang || 'ru';
+    currentLang = (lang === 'ru' || lang === 'be' || lang === 'kk') ? 'ru' : 'en';
+  } catch (e) { currentLang = 'ru'; }
+  document.documentElement.lang = currentLang;
+}
+function applyStaticLanguage() {
+  document.querySelector('h1').textContent = t('title');
+  document.querySelector('.sub').textContent = t('subtitle');
+  document.querySelector('.shop h2').textContent = t('shop');
+  document.querySelector('#mission b').textContent = t('mission');
+  elPrestige.textContent = t('prestige');
+  document.querySelector('#modal h3').textContent = t('prestigeTitle');
+  document.querySelector('#modal p').textContent = t('prestigeText');
+  document.getElementById('prestigeNo').textContent = t('cancel');
+  document.getElementById('prestigeYes').textContent = t('rebirth');
+  elMissionModalTitle.textContent = t('missionHint');
+  elSound.title = t('sound');
+  elOfflineClaim.textContent = t('offlineBasic');
+  elOfflineClaimAd.textContent = t('offlineAd');
+  document.querySelector('#offlineModal h3').textContent = t('offlineTitle');
+  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad';
+}
+function formatOfflineDurationLocalized(seconds) {
+  const total = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (currentLang === 'en') {
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m`;
+    return `${s}s`;
+  }
+  if (h) return `${h} ч. ${m} мин.`;
+  if (m) return `${m} мин.`;
+  return `${s} сек.`;
+}
+function isGamePaused() { return sdkPaused || adActive || document.hidden; }
+
+const INTERSTITIAL_MS = 120000; const REWARDED_VISIBLE_MS = 10000; const REWARDED_MIN_DELAY_MS = 60000; const REWARDED_MAX_DELAY_MS = 180000; const PRESTIGE_NEED = 500000;
+const OFFLINE_STORAGE_KEY = "space-clicker-offline";
+const OFFLINE_CAP_SECONDS = 10800;
+const OFFLINE_EFFICIENCY = 0.1;
+const OFFLINE_MIN_SECONDS = 60;
+let pendingOfflineReward = 0;
+let pendingOfflineSeconds = 0;
+let offlineReportHandled = false;
+const EXPENSIVE_ID = UPGRADES.reduce((best, u) => u.base > best.base ? u : best).id; const state = { score: 0, clickPower: 1, auto: 0, levels: Object.fromEntries(UPGRADES.map(u => [u.id, 0])), lastTick: Date.now(), earned: 0, darkMatter: 0, clicks: 0, cometsCaught: 0, missionIndex: 0, passiveEarned: 0, passiveStreakMs: 0, economistFailed: false, soundOn: true, meteorUntil: 0 }; let ysdk = null; let player = null; let saveTimer = null; let adActive = false; let interstitialTimer = null; let rewardedTimer = null; let cometTimer = null; let shopReady = false; let shopPtr = null; let audioCtx = null; let masterGain = null; const elScore = document.getElementById("score"); const elRate = document.getElementById("rate"); const elShop = document.getElementById("shop"); const elPlanet = document.getElementById("planet"); const elToast = document.getElementById("toast"); const elReward = document.getElementById("rewardBtn"); const elSats = document.getElementById("sats"); const elEra = document.getElementById("era"); const elEraProgress = document.getElementById("eraProgress"); const elMatter = document.getElementById("matter"); const elBoost = document.getElementById("boostTag"); const elPrestige = document.getElementById("prestigeBtn"); const elMissionText = document.getElementById("missionText"); const elMissionBar = document.getElementById("missionBar"); const elMissionInfo = document.getElementById("missionInfo"); const elMissionModal = document.getElementById("missionModal"); const elMissionModalTitle = document.getElementById("missionModalTitle"); const elMissionModalSummary = document.getElementById("missionModalSummary"); const elMissionModalDetail = document.getElementById("missionModalDetail"); const elMissionClose = document.getElementById("missionClose"); const elComet = document.getElementById("comet"); const elSound = document.getElementById("soundBtn"); const elModal = document.getElementById("modal");
+const elOfflineModal = document.getElementById("offlineModal");
+const elOfflineModalText = document.getElementById("offlineModalText");
+const elOfflineRewardAmount = document.getElementById("offlineRewardAmount");
+const elOfflineClaim = document.getElementById("offlineClaim");
+const elOfflineClaimAd = document.getElementById("offlineClaimAd");
+function format(n) { n = Math.floor(n); if (n >= 1e12) return (n / 1e12).toFixed(2) + " T"; if (n >= 1e9) return (n / 1e9).toFixed(2) + " B"; if (n >= 1e6) return (n / 1e6).toFixed(2) + " M"; if (n >= 1e4) return (n / 1e3).toFixed(1) + " K"; return String(n); } function costOf(u) { return Math.floor(u.base * Math.pow(1.18, state.levels[u.id])); } function totalLevels() { return UPGRADES.reduce((sum, u) => sum + (state.levels[u.id] || 0), 0); }
+function autoLevels() { return UPGRADES.filter(u => u.type === "auto").reduce((sum, u) => sum + (state.levels[u.id] || 0), 0); } function currentEra() { let era = ERAS[0]; for (const item of ERAS) { const earnedReady = item.minEarned == null || state.earned >= item.minEarned; const matterReady = item.minDarkMatter == null || state.darkMatter >= item.minDarkMatter; if (earnedReady && matterReady) era = item; } return era; } function prestigeMult() { return 1 + state.darkMatter * 0.5; } function meteorMult() { return Date.now() < state.meteorUntil ? 5 : 1; } function clickValue() { return state.clickPower * prestigeMult() * meteorMult(); } function autoValue() { return state.auto * prestigeMult(); } function addDust(amount) { if (amount <= 0) return 0; state.score += amount; state.earned += amount; return amount; } function recalc() { state.clickPower = 1; state.auto = 0; for (const u of UPGRADES) { const lvl = state.levels[u.id] || 0; if (u.type === "click") state.clickPower += u.value * lvl; else state.auto += u.value * lvl; } } function ensureAudio() { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return null; if (!audioCtx) { audioCtx = new Ctx(); masterGain = audioCtx.createGain(); masterGain.connect(audioCtx.destination); } if (audioCtx.state === "suspended") audioCtx.resume(); syncMasterGain(); return audioCtx; } function syncMasterGain() { if (!masterGain) return; masterGain.gain.value = (!state.soundOn || adActive) ? 0 : 0.28; } function tone(freq, dur, type, vol, at) { if (!state.soundOn || adActive || !ensureAudio()) return; const t = audioCtx.currentTime + (at || 0); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(Math.max(0.0001, vol), t); gain.gain.exponentialRampToValueAtTime(0.0001, t + dur); osc.connect(gain); gain.connect(masterGain); osc.start(t); osc.stop(t + dur + 0.02); } function sfxClick() { tone(690 + Math.random() * 90, 0.06, "square", 0.07); tone(1240, 0.045, "sine", 0.035); } function sfxBuy() { tone(392, 0.1, "sine", 0.09); tone(523, 0.12, "triangle", 0.08, 0.07); tone(784, 0.18, "sine", 0.07, 0.14); } function sfxWin() { tone(523, 0.16, "triangle", 0.1); tone(659, 0.16, "triangle", 0.1, 0.09); tone(784, 0.18, "triangle", 0.11, 0.18); tone(1046, 0.28, "sine", 0.1, 0.28); } function renderHud() { elScore.textContent = format(state.score); const click = clickValue(); const auto = autoValue(); elRate.textContent = `+${format(auto)} / сек · +${format(click)} / клик`; const bonus = Math.round((prestigeMult() - 1) * 100); elMatter.textContent = `Тёмная материя: ${state.darkMatter} · бонус +${bonus}%`; const left = Math.max(0, state.meteorUntil - Date.now()); elBoost.classList.toggle("on", left > 0); if (left > 0) elBoost.textContent = "Метеоритный дождь x5 · " + Math.ceil(left / 1000) + "с"; document.body.classList.toggle("meteor", left > 0); elPrestige.classList.toggle("show", state.earned >= PRESTIGE_NEED); elSound.textContent = state.soundOn ? "🔊" : "🔇"; } function renderShop() { if (!shopReady) { elShop.innerHTML = UPGRADES.map(u => ` <article class="card" data-id="${u.id}"> <b>${u.name}</b> <span class="lvl">ур. 0</span> <p>${u.desc}</p> <div class="buy">Купить · ${format(costOf(u))}</div> </article>`).join(""); shopReady = true; } for (const u of UPGRADES) { const card = elShop.querySelector(`.card[data-id="${u.id}"]`); if (!card) continue; const cost = costOf(u); const can = state.score >= cost; card.classList.toggle("can", can); card.classList.toggle("cant", !can); card.querySelector(".lvl").textContent = "ур. " + state.levels[u.id]; card.querySelector(".buy").textContent = "Купить · " + format(cost); } } function addSat(u, animate) { const index = elSats.children.length; const radius = 8 + (index % 5) * 7; const duration = 14 + (index % 7) * 4; const orbit = document.createElement("div"); orbit.className = "sat-orbit"; orbit.dataset.type = u.id; orbit.style.animationDuration = duration + "s"; orbit.style.animationDelay = -(index * 1.35) + "s"; orbit.innerHTML = `<div class="sat ${u.sat}"></div>`; elSats.appendChild(orbit); if (animate) { orbit.style.inset = "-120%"; requestAnimationFrame(() => { orbit.style.transition = "inset 1.15s cubic-bezier(0.16, 0.86, 0.28, 1)"; orbit.style.inset = "-" + radius + "%"; }); } else { orbit.style.inset = "-" + radius + "%"; } } function renderSats(animateNew) { const wanted = {}; for (const u of UPGRADES) wanted[u.id] = Math.min(state.levels[u.id] || 0, u.satMax); for (const u of UPGRADES) { const have = elSats.querySelectorAll(`[data-type="${u.id}"]`).length; const need = wanted[u.id]; for (let i = have; i < need; i++) addSat(u, animateNew); for (let i = have; i > need; i--) { const nodes = elSats.querySelectorAll(`[data-type="${u.id}"]`); if (nodes.length) nodes[nodes.length - 1].remove(); } } } function renderPlanet() { const era = currentEra(); elPlanet.dataset.stage = String(era.stage); elEra.textContent = "Звание: " + era.name; } function renderMission() { if (state.missionIndex >= MISSIONS.length) { elMissionText.textContent = "Все миссии выполнены. Ты легенда орбиты."; elMissionBar.style.width = "100%"; return; } const m = MISSIONS[state.missionIndex]; elMissionText.textContent = m.title + ": " + m.desc; elMissionBar.style.width = Math.min(100, Math.max(0, m.progress(state) * 100)) + "%"; } function openMissionHint() { const m = MISSIONS[state.missionIndex]; if (!m) { elMissionModalTitle.textContent = "Все миссии выполнены"; elMissionModalSummary.textContent = "Ты прошёл всю цепочку испытаний."; elMissionModalDetail.textContent = "Новые миссии появятся только в следующей версии игры."; } else { const progress = Math.min(100, Math.max(0, m.progress(state) * 100)); elMissionModalTitle.textContent = m.title; elMissionModalSummary.textContent = m.desc; elMissionModalDetail.textContent = (MISSION_HINTS[m.id] || "Выполни указанную цель текущей миссии.") + ` Текущий прогресс: ${Math.floor(progress)}%. Награда: ${format(m.reward)} пыли.`; } elMissionModal.classList.add("show"); } function checkMissions() { while (state.missionIndex < MISSIONS.length && MISSIONS[state.missionIndex].done(state)) { const m = MISSIONS[state.missionIndex]; state.missionIndex += 1; if (m.reward) addDust(m.reward); sfxWin(); toast(m.reward ? ("Миссия: " + m.title + " · +" + format(m.reward)) : ("Миссия: " + m.title)); } renderMission(); } function render() { renderHud(); renderShop(); renderPlanet(); renderSats(false); renderMission(); } function toast(text) { elToast.textContent = text; elToast.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => elToast.classList.remove("show"), 1600); } function spawnPop(x, y, amount) { const node = document.createElement("div"); node.className = "pop"; node.textContent = "+" + format(amount); node.style.left = x + "px"; node.style.top = y + "px"; node.style.setProperty("--drift", ((Math.random() - 0.5) * 36).toFixed(1) + "px"); document.body.appendChild(node); setTimeout(() => node.remove(), 1000); } function shakePlanet() { const dx = (Math.random() - 0.5) * 14; const dy = (Math.random() - 0.5) * 14; elPlanet.animate([ { transform: "translate(0,0) scale(1)" }, { transform: `translate(${dx}px, ${dy}px) scale(0.955)` }, { transform: "translate(0,0) scale(1)" } ], { duration: 140, easing: "ease-out" }); } function banner(text) { const node = document.createElement("div"); node.className = "crit"; node.textContent = text; document.body.appendChild(node); setTimeout(() => node.remove(), 1400); } function clickPlanet(ev) { if (adActive) return; if (ev.target.closest && ev.target.closest(".comet")) return; ensureAudio(); const gain = clickValue(); addDust(gain); state.clicks += 1; const x = ev.clientX || window.innerWidth / 2; const y = ev.clientY || window.innerHeight / 2; spawnPop(x, y, gain); shakePlanet(); sfxClick(); renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave(); } function buy(id) { if (adActive) return; const u = UPGRADES.find(item => item.id === id); if (!u) return; const cost = costOf(u); if (state.score < cost) { toast("Не хватает звёздной пыли"); return; } if (state.score >= 50000 && state.score < 100000) state.economistFailed = true; state.score -= cost; state.levels[u.id] += 1; recalc(); renderHud(); renderShop(); renderPlanet(); renderSats(true); checkMissions(); sfxBuy(); toast(u.name + " улучшен"); scheduleSave(); if (u.id === EXPENSIVE_ID) showInterstitial(); } let lastTouchAt = 0; function markTouch() { lastTouchAt = Date.now(); } elPlanet.addEventListener("touchstart", (e) => { if (adActive) return; markTouch(); clickPlanet(e.changedTouches[0] || e); }, { passive: false }); elPlanet.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; clickPlanet(e); }); elShop.addEventListener("pointerdown", (e) => { const card = e.target.closest(".card"); if (!card || adActive) return; shopPtr = { id: card.dataset.id, x: e.clientX, y: e.clientY, pointerId: e.pointerId }; }); elShop.addEventListener("pointerup", (e) => { if (!shopPtr || shopPtr.pointerId !== e.pointerId) return; const dx = e.clientX - shopPtr.x; const dy = e.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 64) return; buy(id); }); elShop.addEventListener("touchstart", (e) => { const touch = e.changedTouches[0]; const card = e.target.closest(".card"); if (!card || !touch || adActive) return; markTouch(); e.preventDefault(); shopPtr = { id: card.dataset.id, x: touch.clientX, y: touch.clientY, pointerId: "touch" }; }, { passive: false }); elShop.addEventListener("touchend", (e) => { if (!shopPtr || shopPtr.pointerId !== "touch") return; const touch = e.changedTouches[0]; if (!touch) return; const dx = touch.clientX - shopPtr.x; const dy = touch.clientY - shopPtr.y; const id = shopPtr.id; shopPtr = null; if (dx * dx + dy * dy > 100) return; e.preventDefault(); buy(id); }, { passive: false }); elShop.addEventListener("pointercancel", () => { shopPtr = null; }); function setAudioPaused(paused) { syncMasterGain(); document.querySelectorAll("audio, video").forEach((media) => { if (paused) { media.dataset.wasPlaying = media.paused ? "0" : "1"; media.pause(); } else if (media.dataset.wasPlaying === "1") { media.play().catch(() => {}); } }); } function setPaused(paused) { adActive = paused; document.body.classList.toggle("ad-paused", paused); setAudioPaused(paused); if (paused) { gameplay(false); } else { state.lastTick = Date.now(); gameplay(true); } } function tick() { if (adActive) { state.lastTick = Date.now(); return; } const now = Date.now(); const dt = Math.min(5, (now - state.lastTick) / 1000); state.lastTick = now; const passiveGain = autoValue() * dt; if (passiveGain > 0) { addDust(passiveGain); state.passiveEarned += passiveGain; } if (autoValue() >= 20) state.passiveStreakMs += dt * 1000; else state.passiveStreakMs = 0; renderHud(); renderShop(); renderPlanet(); checkMissions(); } setInterval(tick, 250); let cometCaught = false;
+
+function hideComet() {
+  cometCaught = false;
+  elComet.classList.remove("fly");
+  elComet.style.display = "none";
+  elComet.style.removeProperty("--x1");
+  elComet.style.removeProperty("--y1");
+  elComet.style.removeProperty("--x2");
+  elComet.style.removeProperty("--y2");
+  elComet.style.removeProperty("--angle");
+}
+
+function spawnCometBurst(x, y) {
+  const burst = document.createElement("div");
+  burst.className = "comet-burst";
+  burst.style.left = x + "px";
+  burst.style.top = y + "px";
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 700);
+}
+
+function catchComet(ev) {
+  if (ev) {
+    ev.stopPropagation();
+    if (typeof ev.preventDefault === "function") ev.preventDefault();
+  }
+
+  if (!elComet.classList.contains("fly") || adActive || cometCaught) return;
+
+  cometCaught = true;
+
+  const rect = elComet.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+
+  hideComet();
+  spawnCometBurst(x, y);
+
+  state.cometsCaught += 1;
+  console.log("Комета поймана!");
+
+  const reward = 5000;
+  addDust(reward);
+  banner("ЗОЛОТАЯ КОМЕТА ПОЙМАНА!");
+  sfxWin();
+  toast("Комета поймана · +" + format(reward) + " пыли");
+
+  renderHud();
+  renderShop();
+  renderPlanet();
+  checkMissions();
+  scheduleSave();
+}
+
+function handleCometTouch(ev) {
+  if (!ev.changedTouches || !ev.changedTouches[0]) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  catchComet(ev);
+}
+
+elComet.addEventListener("pointerdown", catchComet, { passive: false });
+elComet.addEventListener("touchstart", handleCometTouch, { passive: false });
+elComet.addEventListener("click", catchComet);
+elComet.addEventListener("animationend", () => {
+  if (elComet.classList.contains("fly")) {
+    hideComet();
+  }
+});
+
+function spawnComet() {
+  if (adActive || document.hidden || elComet.classList.contains("fly")) return;
+
+  const planetRect = elPlanet.getBoundingClientRect();
+  const centerY = planetRect.top + planetRect.height / 2;
+  const fromLeft = Math.random() < 0.5;
+  const padding = 90;
+  const x1 = fromLeft ? -padding : innerWidth + padding;
+  const x2 = fromLeft ? innerWidth + padding : -padding;
+
+  elComet.style.setProperty("--x1", x1 + "px");
+  elComet.style.setProperty("--y1", centerY + "px");
+  elComet.style.setProperty("--x2", x2 + "px");
+  elComet.style.setProperty("--y2", centerY + "px");
+  elComet.style.setProperty("--angle", "0deg");
+  elComet.style.setProperty("--comet-duration", "4.8s");
+  elComet.style.setProperty("--tail", fromLeft ? "180deg" : "0deg");
+
+  cometCaught = false;
+  elComet.style.display = "block";
+  elComet.classList.remove("fly");
+  void elComet.offsetWidth;
+  elComet.classList.add("fly");
+}
+
+function scheduleComet() {
+  // Совместимость с существующими вызовами: следующий запуск — через 5 секунд.
+  clearTimeout(cometTimer);
+  cometTimer = setTimeout(spawnComet, 5000);
+}
+
+function startCometSystem() {
+  clearTimeout(cometTimer);
+  clearInterval(cometTimer);
+  cometCaught = false;
+
+  // Первый пролёт через 5 секунд, далее строго каждые 5 секунд.
+  cometTimer = setTimeout(() => {
+    spawnComet();
+    cometTimer = setInterval(() => {
+      spawnComet();
+    }, 5000);
+  }, 5000);
+}
+
+function doPrestige() { state.darkMatter += 1; state.score = 0; state.earned = 0; state.clicks = 0; state.passiveEarned = 0; state.passiveStreakMs = 0; state.economistFailed = false; state.levels = Object.fromEntries(UPGRADES.map(u => [u.id, 0])); state.meteorUntil = 0; recalc(); elSats.innerHTML = ""; elModal.classList.remove("show"); render(); checkMissions(); sfxWin(); toast("Сверхновая! Тёмная материя +1"); scheduleSave(); } function openPrestigeModal(e) { if (e) { e.preventDefault(); e.stopPropagation(); } if (state.earned < PRESTIGE_NEED || adActive) return; elModal.classList.add("show"); } elPrestige.addEventListener("touchstart", (e) => { markTouch(); openPrestigeModal(e); }, { passive: false }); elPrestige.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; openPrestigeModal(e); }); document.getElementById("prestigeNo").addEventListener("click", () => elModal.classList.remove("show")); document.getElementById("prestigeYes").addEventListener("click", doPrestige); function openMissionHintFromTouch(e) { markTouch(); if (e) { e.preventDefault(); e.stopPropagation(); } if (!adActive) openMissionHint(); } elMissionInfo.addEventListener("touchstart", openMissionHintFromTouch, { passive: false }); elMissionInfo.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; e.stopPropagation(); if (!adActive) openMissionHint(); }); elMissionClose.addEventListener("click", () => elMissionModal.classList.remove("show")); elMissionModal.addEventListener("pointerdown", (e) => { if (e.target === elMissionModal) elMissionModal.classList.remove("show"); }); document.addEventListener("keydown", (e) => { if (e.key === "Escape") { elMissionModal.classList.remove("show"); elModal.classList.remove("show"); } }); function toggleSound(e) { if (e) { e.preventDefault(); e.stopPropagation(); } state.soundOn = !state.soundOn; ensureAudio(); syncMasterGain(); renderHud(); scheduleSave(); } elSound.addEventListener("touchstart", (e) => { markTouch(); toggleSound(e); }, { passive: false }); elSound.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; toggleSound(e); }); function showInterstitial() { if (!ysdk || !ysdk.adv || adActive) return; setPaused(true); try { ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => setPaused(false), onError: () => setPaused(false), onOffline: () => setPaused(false) } }); } catch (e) { setPaused(false); } } function showRewarded(onSuccess) {
+  if (adActive) return;
+  if (!ysdk || !ysdk.adv) {
+    if (onSuccess) onSuccess(false);
+    else { scheduleRewardedBtn(); toast("Видеореклама пока недоступна"); }
+    return;
+  }
+
+  let rewarded = false;
+  setPaused(true);
+
+  try {
+    ysdk.adv.showRewardedVideo({
+      callbacks: {
+        onRewarded: () => { rewarded = true; },
+        onClose: () => {
+          setPaused(false);
+          if (onSuccess) {
+            onSuccess(rewarded);
+            return;
+          }
+          if (!rewarded) {
+            scheduleRewardedBtn();
+            return;
+          }
+          const extra = state.score;
+          state.score *= 2;
+          state.earned += extra;
+          render();
+          scheduleSave();
+          hideRewardedBtn();
+          toast("Баланс удвоен!");
+        },
+        onError: () => {
+          setPaused(false);
+          if (onSuccess) onSuccess(false);
+          else scheduleRewardedBtn();
+        }
+      }
+    });
+  } catch (e) {
+    setPaused(false);
+    if (onSuccess) onSuccess(false);
+    else scheduleRewardedBtn();
+  }
+}
+
+function hideRewardedBtn(reschedule = true) { elReward.classList.remove("show"); clearTimeout(rewardedTimer); if (reschedule) scheduleRewardedBtn(); } function scheduleRewardedBtn() { clearTimeout(rewardedTimer); const delay = REWARDED_MIN_DELAY_MS + Math.random() * (REWARDED_MAX_DELAY_MS - REWARDED_MIN_DELAY_MS); rewardedTimer = setTimeout(() => { if (adActive) { scheduleRewardedBtn(); return; } elReward.classList.add("show"); clearTimeout(rewardedTimer); rewardedTimer = setTimeout(() => { if (elReward.classList.contains("show")) { elReward.classList.remove("show"); scheduleRewardedBtn(); } }, REWARDED_VISIBLE_MS); }, delay); } function startAdTimers() { clearInterval(interstitialTimer); interstitialTimer = setInterval(showInterstitial, INTERSTITIAL_MS); scheduleRewardedBtn(); } function activateRewardedAd(e) { markTouch(); if (e) { e.preventDefault(); e.stopPropagation(); } if (!elReward.classList.contains("show") || adActive) return; hideRewardedBtn(false); showRewarded(); } elReward.addEventListener("touchstart", activateRewardedAd, { passive: false }); elReward.addEventListener("click", (e) => { if (Date.now() - lastTouchAt < 600) return; activateRewardedAd(e); }); function snapshot() { return { score: state.score, levels: state.levels, lastTick: Date.now(), earned: state.earned, darkMatter: state.darkMatter, clicks: state.clicks, cometsCaught: state.cometsCaught, missionIndex: state.missionIndex, passiveEarned: state.passiveEarned, passiveStreakMs: state.passiveStreakMs, economistFailed: state.economistFailed, soundOn: state.soundOn }; } function applySave(data) { if (!data) return; state.score = Number(data.score) || 0; state.levels = { ...Object.fromEntries(UPGRADES.map(u => [u.id, 0])), ...(data.levels || {}) }; state.earned = Number(data.earned) || 0; state.darkMatter = Number(data.darkMatter) || 0; state.clicks = Number(data.clicks) || 0; state.cometsCaught = Number(data.cometsCaught) || 0; state.missionIndex = Number(data.missionIndex) || 0; state.passiveEarned = Number(data.passiveEarned) || 0; state.passiveStreakMs = Number(data.passiveStreakMs) || 0; state.economistFailed = data.economistFailed === true; if (state.missionIndex >= 5) state.missionIndex -= 1; state.soundOn = data.soundOn !== false; state.lastTick = Date.now(); recalc(); elSats.innerHTML = ""; render(); } function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveProgress, 600); } async function saveProgress() { const data = snapshot(); try { localStorage.setItem("space-clicker", JSON.stringify(data)); } catch (e) {} try { if (player && player.setData) await player.setData(data, true); } catch (e) {} } function loadLocal() { try { const raw = localStorage.getItem("space-clicker"); if (raw) applySave(JSON.parse(raw)); } catch (e) {} }
+
+function readOfflineStorage() {
+  try {
+    const raw = localStorage.getItem(OFFLINE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { lastExitAt: null, cpsAtExit: 0, pendingReward: 0, pendingSeconds: 0 };
+  } catch (e) {
+    return { lastExitAt: null, cpsAtExit: 0, pendingReward: 0, pendingSeconds: 0 };
+  }
+}
+
+function writeOfflineStorage(data) {
+  try {
+    localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {}
+}
+
+function saveOfflineTimestamp() {
+  const data = readOfflineStorage();
+  data.lastExitAt = Date.now();
+  data.cpsAtExit = autoValue();
+  writeOfflineStorage(data);
+  try { saveProgress(); } catch (e) {}
+}
+
+function formatOfflineDuration(seconds) {
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hours > 0) return `${hours} ч. ${minutes} мин.`;
+  if (minutes > 0) return `${minutes} мин.`;
+  return `${secs} сек.`;
+}
+
+function prepareOfflineReward() {
+  if (offlineReportHandled) return;
+
+  const data = readOfflineStorage();
+  let reward = Number(data.pendingReward) || 0;
+  let absentSeconds = Number(data.pendingSeconds) || 0;
+
+  if (!reward && data.lastExitAt) {
+    absentSeconds = Math.max(0, (Date.now() - Number(data.lastExitAt)) / 1000);
+    const cappedSeconds = Math.min(absentSeconds, OFFLINE_CAP_SECONDS);
+    const cpsAtExit = Math.max(0, Number(data.cpsAtExit) || 0);
+    reward = cpsAtExit * cappedSeconds * OFFLINE_EFFICIENCY;
+    data.lastExitAt = null;
+
+    if (reward > 0) {
+      data.pendingReward = reward;
+      data.pendingSeconds = absentSeconds;
+    } else {
+      data.pendingReward = 0;
+      data.pendingSeconds = 0;
+    }
+    writeOfflineStorage(data);
+  }
+
+  pendingOfflineReward = reward;
+  pendingOfflineSeconds = absentSeconds;
+  offlineReportHandled = true;
+
+  if (pendingOfflineSeconds > OFFLINE_MIN_SECONDS && pendingOfflineReward > 0) {
+    elOfflineModalText.textContent =
+      `Вас не было в сети ${formatOfflineDuration(pendingOfflineSeconds)}. За это время автоматические дроны и станции собрали для вас ` +
+      `${format(pendingOfflineReward)} космической пыли!`;
+    elOfflineRewardAmount.textContent = format(pendingOfflineReward);
+    elOfflineModal.classList.add("show");
+  }
+}
+
+function clearOfflinePending() {
+  pendingOfflineReward = 0;
+  pendingOfflineSeconds = 0;
+  writeOfflineStorage({ lastExitAt: null, cpsAtExit: 0, pendingReward: 0, pendingSeconds: 0 });
+}
+
+function claimOfflineReward(multiplier = 1) {
+  if (pendingOfflineReward <= 0) return;
+  const reward = pendingOfflineReward * multiplier;
+  addDust(reward);
+  clearOfflinePending();
+  elOfflineModal.classList.remove("show");
+  render();
+  checkMissions();
+  scheduleSave();
+  toast(`Оффлайн-доход · +${format(reward)} пыли`);
+}
+
+elOfflineClaim.addEventListener("click", () => claimOfflineReward(1));
+elOfflineClaimAd.addEventListener("click", () => {
+  if (pendingOfflineReward <= 0 || adActive) return;
+  showRewarded((rewarded) => {
+    if (!rewarded) {
+      toast("Реклама не просмотрена — награда не удвоена");
+      return;
+    }
+    claimOfflineReward(2);
+  });
+});
+
+ function drawStars() { const c = document.getElementById("stars"); const ctx = c.getContext("2d"); const stars = []; function resize() { c.width = innerWidth; c.height = innerHeight; stars.length = 0; for (let i = 0; i < 140; i++) { stars.push({ x: Math.random() * c.width, y: Math.random() * c.height, r: Math.random() * 1.6 + 0.2, a: Math.random(), s: Math.random() * 0.02 + 0.004 }); } } resize(); addEventListener("resize", resize); function loop() { ctx.clearRect(0, 0, c.width, c.height); for (const st of stars) { st.a += st.s; ctx.fillStyle = `rgba(255,255,255,${0.25 + Math.abs(Math.sin(st.a)) * 0.75})`; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); } requestAnimationFrame(loop); } loop(); } function gameplay(on) { try { if (!ysdk || !ysdk.features || !ysdk.features.GameplayAPI) return; if (on) ysdk.features.GameplayAPI.start(); else ysdk.features.GameplayAPI.stop(); } catch (e) {} } 
+function syncMasterGain() {
+  if (!masterGain) return;
+  masterGain.gain.value = (!state.soundOn || isGamePaused()) ? 0 : 0.28;
+}
+function setAudioPaused(paused) {
+  syncMasterGain();
+  if (audioCtx) {
+    try {
+      if (paused && audioCtx.state === 'running') audioCtx.suspend();
+      else if (!paused && audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+  document.querySelectorAll('audio, video').forEach(media => {
+    if (paused) {
+      media.dataset.wasPlaying = media.paused ? '0' : '1';
+      media.pause();
+    } else if (media.dataset.wasPlaying === '1') {
+      media.play().catch(() => {});
+    }
+  });
+}
+function setPaused(paused) {
+  adActive = !!paused;
+  document.body.classList.toggle('ad-paused', adActive || sdkPaused);
+  setAudioPaused(adActive || sdkPaused);
+  if (adActive || sdkPaused) {
+    gameplay(false);
+  } else {
+    state.lastTick = Date.now();
+    gameplay(true);
+  }
+}
+function tick() {
+  if (isGamePaused()) {
+    state.lastTick = Date.now();
+    return;
+  }
+  const now = Date.now();
+  const dt = Math.min(5, Math.max(0, (now - state.lastTick) / 1000));
+  state.lastTick = now;
+  const cps = autoValue();
+  if (cps > 0) {
+    const gain = cps * dt;
+    addDust(gain);
+    state.passiveEarned += gain;
+  }
+  if (cps >= 20) state.passiveStreakMs += dt * 1000;
+  else state.passiveStreakMs = 0;
+  renderHud(); renderShop(); renderPlanet(); checkMissions();
+}
+function renderHud() {
+  elScore.textContent = format(state.score);
+  const click = clickValue();
+  const auto = autoValue();
+  elRate.textContent = t('rate', format(auto), format(click));
+  const bonus = Math.round((prestigeMult() - 1) * 100);
+  elMatter.textContent = t('darkMatter', state.darkMatter, bonus);
+  const left = Math.max(0, state.meteorUntil - Date.now());
+  elBoost.classList.toggle('on', left > 0);
+  if (left > 0) elBoost.textContent = t('meteor', Math.ceil(left / 1000));
+  document.body.classList.toggle('meteor', left > 0);
+  elPrestige.classList.toggle('show', state.earned >= PRESTIGE_NEED);
+  elSound.textContent = state.soundOn ? '🔊' : '🔇';
+}
+function renderShop() {
+  if (!shopReady) {
+    elShop.innerHTML = UPGRADES.map(u => `
+      <article class="card" data-id="${u.id}">
+        <b></b><span class="lvl">ур. 0</span><p></p><div class="buy"></div>
+      </article>`).join('');
+    shopReady = true;
+  }
+  for (const u of UPGRADES) {
+    const card = elShop.querySelector(`.card[data-id="${u.id}"]`);
+    if (!card) continue;
+    const [name, desc] = localUpgrade(u);
+    const cost = costOf(u);
+    const can = state.score >= cost;
+    card.classList.toggle('can', can);
+    card.classList.toggle('cant', !can);
+    card.querySelector('b').textContent = name;
+    card.querySelector('.lvl').textContent = (currentLang === 'ru' ? 'ур. ' : 'lvl. ') + state.levels[u.id];
+    card.querySelector('p').textContent = desc;
+    card.querySelector('.buy').textContent = `${t('buy')} · ${format(cost)}`;
+  }
+}
+function formatEraRequirement(item) {
+  const parts = [];
+  const remainingEarned = item.minEarned == null ? 0 : Math.max(0, item.minEarned - state.earned);
+  const remainingMatter = item.minDarkMatter == null ? 0 : Math.max(0, item.minDarkMatter - state.darkMatter);
+
+  if (remainingEarned > 0) {
+    parts.push(format(remainingEarned) + (currentLang === 'ru' ? ' пыли' : ' dust'));
+  }
+  if (remainingMatter > 0) {
+    parts.push(remainingMatter + (currentLang === 'ru'
+      ? (remainingMatter === 1 ? ' престиж' : ' престижа')
+      : (remainingMatter === 1 ? ' prestige' : ' prestiges')));
+  }
+  return parts;
+}
+
+function renderEraProgress() {
+  if (!elEraProgress) return;
+  const era = currentEra();
+  const next = ERAS.find(item => item.stage > era.stage);
+
+  if (!next) {
+    elEraProgress.textContent = currentLang === 'ru'
+      ? 'Максимальная стадия достигнута'
+      : 'Maximum stage reached';
+    return;
+  }
+
+  const parts = formatEraRequirement(next);
+
+  if (!parts.length) {
+    elEraProgress.textContent = currentLang === 'ru'
+      ? 'Следующая стадия уже доступна'
+      : 'Next stage is already available';
+    return;
+  }
+
+  elEraProgress.textContent = currentLang === 'ru'
+    ? 'До следующей планеты: ' + parts.join(' + ')
+    : 'To next planet: ' + parts.join(' + ');
+}
+
+function renderPlanet() {
+  const era = currentEra();
+  elPlanet.dataset.stage = String(era.stage);
+  elEra.textContent = t('eraPrefix') + localEraName(era.name);
+  renderEraProgress();
+}
+function renderMission() {
+  if (state.missionIndex >= MISSIONS.length) {
+    elMissionText.textContent = t('allMissions');
+    elMissionBar.style.width = '100%';
+    return;
+  }
+  const m = MISSIONS[state.missionIndex];
+  const lm = localMission(m);
+  elMissionText.textContent = lm.title + ': ' + lm.desc;
+  elMissionBar.style.width = Math.min(100, Math.max(0, m.progress(state) * 100)) + '%';
+}
+function openMissionHint() {
+  const m = MISSIONS[state.missionIndex];
+  if (!m) {
+    elMissionModalTitle.textContent = t('allMissions');
+    elMissionModalSummary.textContent = t('missionNext');
+    elMissionModalDetail.textContent = '';
+  } else {
+    const lm = localMission(m);
+    const progress = Math.min(100, Math.max(0, m.progress(state) * 100));
+    elMissionModalTitle.textContent = lm.title;
+    elMissionModalSummary.textContent = lm.desc;
+    elMissionModalDetail.textContent = localHint(m.id) + ' ' + t('allRewards') + format(m.reward) + (currentLang === 'ru' ? ' пыли.' : ' dust.');
+  }
+  elMissionModal.classList.add('show');
+}
+function checkMissions() {
+  while (state.missionIndex < MISSIONS.length && MISSIONS[state.missionIndex].done(state)) {
+    const m = MISSIONS[state.missionIndex];
+    const lm = localMission(m);
+    state.missionIndex += 1;
+    if (m.reward) addDust(m.reward);
+    sfxWin();
+    toast(m.reward ? `${currentLang === 'ru' ? 'Миссия' : 'Mission'}: ${lm.title} · +${format(m.reward)}` : `${currentLang === 'ru' ? 'Миссия' : 'Mission'}: ${lm.title}`);
+  }
+  renderMission();
+}
+function clickPlanet(ev) {
+  if (isGamePaused()) return;
+  const target = ev.target || elPlanet;
+  if (target.closest && target.closest('.comet')) return;
+  ensureAudio();
+  const gain = clickValue();
+  addDust(gain);
+  state.clicks += 1;
+  const x = Number.isFinite(ev.clientX) ? ev.clientX : innerWidth / 2;
+  const y = Number.isFinite(ev.clientY) ? ev.clientY : innerHeight / 2;
+  spawnPop(x, y, gain);
+  shakePlanet(); sfxClick(); renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave();
+}
+function buy(id) {
+  if (isGamePaused()) return;
+  const u = UPGRADES.find(item => item.id === id);
+  if (!u) return;
+  const cost = costOf(u);
+  if (state.score < cost) { toast(t('notEnough')); return; }
+  if (state.score >= 50000 && state.score < 100000) state.economistFailed = true;
+  state.score -= cost;
+  state.levels[u.id] += 1;
+  recalc(); renderHud(); renderShop(); renderPlanet(); renderSats(true); checkMissions(); sfxBuy();
+  const [name] = localUpgrade(u);
+  toast(name + ' ' + t('buyed')); scheduleSave();
+  if (u.id === EXPENSIVE_ID) showInterstitial();
+}
+function claimOfflineReward(multiplier = 1) {
+  if (pendingOfflineReward <= 0) return;
+  const reward = pendingOfflineReward * multiplier;
+  addDust(reward);
+  clearOfflinePending();
+  elOfflineModal.classList.remove('show');
+  render(); checkMissions(); scheduleSave();
+  toast(t('offlineSaved') + format(reward) + t('dust'));
+}
+function prepareOfflineReward() {
+  if (offlineReportHandled) return;
+  const data = readOfflineStorage();
+  let reward = Number(data.pendingReward) || 0;
+  let absentSeconds = Number(data.pendingSeconds) || 0;
+  if (!reward && data.lastExitAt) {
+    absentSeconds = Math.max(0, (Date.now() - Number(data.lastExitAt)) / 1000);
+    const cappedSeconds = Math.min(absentSeconds, OFFLINE_CAP_SECONDS);
+    const cpsAtExit = Math.max(0, Number(data.cpsAtExit) || 0);
+    reward = cpsAtExit * cappedSeconds * OFFLINE_EFFICIENCY;
+    data.lastExitAt = null;
+    data.pendingReward = reward > 0 ? reward : 0;
+    data.pendingSeconds = reward > 0 ? absentSeconds : 0;
+    data.cpsAtExit = 0;
+    writeOfflineStorage(data);
+  }
+  pendingOfflineReward = reward;
+  pendingOfflineSeconds = absentSeconds;
+  offlineReportHandled = true;
+  if (pendingOfflineSeconds > OFFLINE_MIN_SECONDS && pendingOfflineReward > 0) {
+    elOfflineModalText.textContent = t('offlineNarrative', formatOfflineDurationLocalized(pendingOfflineSeconds), format(pendingOfflineReward));
+    elOfflineRewardAmount.textContent = format(pendingOfflineReward);
+    elOfflineModal.classList.add('show');
+  }
+}
+function subscribeSdkPauseEvents() {
+  if (!ysdk || typeof ysdk.on !== 'function') return;
+  const pauseHandler = () => {
+    sdkPaused = true;
+    document.body.classList.add('ad-paused');
+    setAudioPaused(true);
+    state.lastTick = Date.now();
+    gameplay(false);
+  };
+  const resumeHandler = () => {
+    sdkPaused = false;
+    if (!adActive && !document.hidden) {
+      state.lastTick = Date.now();
+      setAudioPaused(false);
+      gameplay(true);
+    }
+    if (!adActive && !document.hidden) document.body.classList.remove('ad-paused');
+  };
+  ysdk.on('game_api_pause', pauseHandler);
+  ysdk.on('game_api_resume', resumeHandler);
+}
+async function initYandex() {
+  loadLocal();
+  recalc();
+  render();
+  drawStars();
+  startCometSystem();
+
+  if (typeof YaGames === 'undefined') {
+    prepareOfflineReward();
+    applyStaticLanguage();
+    gameStarted = true;
+    gameplay(true);
+    return;
+  }
+
+  try {
+    ysdk = await YaGames.init();
+    detectLang();
+    applyStaticLanguage();
+    subscribeSdkPauseEvents();
+
+    try {
+      player = await ysdk.getPlayer();
+      const data = await player.getData();
+      if (data && typeof data.score === 'number') applySave(data);
+    } catch (e) {}
+
+    recalc();
+    render();
+    prepareOfflineReward();
+
+    // Game Ready only after the actual interactive screen is rendered.
+    ysdk.features?.LoadingAPI?.ready();
+    gameStarted = true;
+
+    if (!sdkPaused) gameplay(true);
+    startAdTimers();
+  } catch (e) {
+    recalc();
+    render();
+    prepareOfflineReward();
+    gameplay(true);
+  }
+}
+
+window.addEventListener('pagehide', saveOfflineTimestamp, { capture: true });
+window.addEventListener('beforeunload', saveOfflineTimestamp, { capture: true });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    saveOfflineTimestamp();
+    gameplay(false);
+    state.lastTick = Date.now();
+    setAudioPaused(true);
+  } else if (!adActive && !sdkPaused) {
+    state.lastTick = Date.now();
+    setAudioPaused(false);
+    gameplay(true);
+  }
+});
+document.addEventListener('contextmenu', e => e.preventDefault(), { capture: true });
+document.addEventListener('selectstart', e => e.preventDefault(), { capture: true });
+
+// Fast touch handling for planet, shop cards and all game buttons.
+(function installUniversalTouch() {
+  let cardTouch = null;
+  let lastFastTouch = 0;
+  const point = e => (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]) || null;
+  const suppress = e => { if (e.cancelable) e.preventDefault(); e.stopImmediatePropagation(); };
+
+  document.addEventListener('touchstart', e => {
+    const p = point(e);
+    if (!p || isGamePaused()) return;
+    const target = e.target;
+    const planet = target.closest && target.closest('#planet');
+    const card = target.closest && target.closest('.card');
+    const button = target.closest && target.closest('button');
+
+    if (planet) {
+      lastFastTouch = Date.now(); touchTriggeredAt = lastFastTouch; suppress(e);
+      clickPlanet({ clientX:p.clientX, clientY:p.clientY, target:planet, preventDefault(){}, stopPropagation(){} });
+      return;
+    }
+    if (card) {
+      lastFastTouch = Date.now(); touchTriggeredAt = lastFastTouch;
+      cardTouch = { id:card.dataset.id, x:p.clientX, y:p.clientY };
+      return;
+    }
+    if (button) {
+      const id = button.id;
+      lastFastTouch = Date.now(); touchTriggeredAt = lastFastTouch; suppress(e);
+      if (id === 'prestigeBtn') openPrestigeModal(e);
+      else if (id === 'prestigeNo') elModal.classList.remove('show');
+      else if (id === 'prestigeYes') doPrestige();
+      else if (id === 'missionInfo') openMissionHint();
+      else if (id === 'missionClose') elMissionModal.classList.remove('show');
+      else if (id === 'soundBtn') toggleSound(e);
+      else if (id === 'rewardBtn') activateRewardedAd(e);
+      else if (id === 'offlineClaim') claimOfflineReward(1);
+      else if (id === 'offlineClaimAd') {
+        if (pendingOfflineReward > 0 && !adActive) {
+          showRewarded(rewarded => rewarded ? claimOfflineReward(2) : toast(t('adNotWatched')));
+        }
+      }
+    }
+  }, { capture:true, passive:false });
+
+  document.addEventListener('touchend', e => {
+    const p = point(e);
+    if (!p || !cardTouch) return;
+    const dx = p.clientX - cardTouch.x, dy = p.clientY - cardTouch.y;
+    const id = cardTouch.id; cardTouch = null;
+    if (dx*dx + dy*dy <= 144) { suppress(e); buy(id); lastFastTouch = Date.now(); }
+  }, { capture:true, passive:false });
+  document.addEventListener('touchcancel', () => { cardTouch = null; }, { capture:true, passive:true });
+  document.addEventListener('click', e => {
+    if (Date.now() - lastFastTouch < 650) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, { capture:true });
+})();
+
+
+function applyStaticLanguage() {
+  document.querySelector('h1').textContent = t('title');
+  document.querySelector('.sub').textContent = t('subtitle');
+  document.querySelector('.shop h2').textContent = t('shop');
+  document.querySelector('#mission b').textContent = t('mission');
+  elPrestige.textContent = t('prestige');
+  document.querySelector('#modal h3').textContent = t('prestigeTitle');
+  document.querySelector('#modal p').textContent = t('prestigeText');
+  document.getElementById('prestigeNo').textContent = t('cancel');
+  document.getElementById('prestigeYes').textContent = t('rebirth');
+  elMissionModalTitle.textContent = t('missionHint');
+  elMissionInfo.title = t('missionHint');
+  elSound.title = t('sound');
+  elOfflineClaim.textContent = t('offlineBasic');
+  elOfflineClaimAd.textContent = t('offlineAd');
+  document.querySelector('#offlineModal h3').textContent = t('offlineTitle');
+  document.querySelector('#offlineRewardBox').firstChild.textContent = currentLang === 'ru' ? 'Накоплено: ' : 'Collected: ';
+  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad';
+}
+
+function showRewarded(onSuccess) {
+  if (adActive || sdkPaused) return;
+  if (!ysdk || !ysdk.adv) {
+    if (onSuccess) onSuccess(false);
+    else { scheduleRewardedBtn(); toast(t('rewardedUnavailable')); }
+    return;
+  }
+  let rewarded = false;
+  setPaused(true);
+  try {
+    ysdk.adv.showRewardedVideo({ callbacks: {
+      onRewarded: () => { rewarded = true; },
+      onClose: () => {
+        setPaused(false);
+        if (onSuccess) { onSuccess(rewarded); return; }
+        if (!rewarded) { scheduleRewardedBtn(); return; }
+        state.score *= 2;
+        state.earned += state.score / 2;
+        render(); scheduleSave(); hideRewardedBtn(); toast(t('balanceDoubled'));
+      },
+      onError: () => { setPaused(false); if (onSuccess) onSuccess(false); else scheduleRewardedBtn(); }
+    }});
+  } catch (e) {
+    setPaused(false);
+    if (onSuccess) onSuccess(false); else scheduleRewardedBtn();
+  }
+}
+
+function spawnComet() {
+  if (isGamePaused() || document.hidden || elComet.classList.contains('fly')) return;
+  const planetRect = elPlanet.getBoundingClientRect();
+  const centerY = planetRect.top + planetRect.height / 2;
+  const fromLeft = Math.random() < 0.5;
+  const padding = 90;
+  const x1 = fromLeft ? -padding : innerWidth + padding;
+  const x2 = fromLeft ? innerWidth + padding : -padding;
+  elComet.style.setProperty('--x1', x1 + 'px');
+  elComet.style.setProperty('--y1', centerY + 'px');
+  elComet.style.setProperty('--x2', x2 + 'px');
+  elComet.style.setProperty('--y2', centerY + 'px');
+  elComet.style.setProperty('--angle', '0deg');
+  elComet.style.setProperty('--comet-duration', '4.8s');
+  elComet.style.setProperty('--tail', fromLeft ? '180deg' : '0deg');
+  cometCaught = false;
+  elComet.style.display = 'block';
+  elComet.classList.remove('fly');
+  void elComet.offsetWidth;
+  elComet.classList.add('fly');
+}
+
+function catchComet(ev) {
+  if (ev) {
+    if (typeof ev.preventDefault === 'function') ev.preventDefault();
+    if (typeof ev.stopPropagation === 'function') ev.stopPropagation();
+  }
+  if (!elComet.classList.contains('fly') || isGamePaused() || cometCaught) return;
+  cometCaught = true;
+  const rect = elComet.getBoundingClientRect();
+  hideComet();
+  spawnCometBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  state.cometsCaught += 1;
+  const reward = 5000;
+  addDust(reward);
+  banner(t('cometBanner'));
+  sfxWin();
+  toast(t('cometCaught', format(reward)));
+  renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave();
+}
+
+initYandex();
+</script></body> </html>
