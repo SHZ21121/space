@@ -922,13 +922,14 @@ html, body {
 
   .shop .mission {
     transform-origin: left top;
-    transition: width .38s cubic-bezier(.22,.8,.2,1),
-                height .38s cubic-bezier(.22,.8,.2,1),
-                min-height .38s cubic-bezier(.22,.8,.2,1),
-                padding .38s cubic-bezier(.22,.8,.2,1),
-                margin-bottom .38s cubic-bezier(.22,.8,.2,1),
-                border-radius .38s cubic-bezier(.22,.8,.2,1),
-                transform .38s cubic-bezier(.22,.8,.2,1);
+    will-change: width, height, min-height, padding, margin-bottom, border-radius, transform;
+    transition: width .62s cubic-bezier(.22,.8,.2,1),
+                height .62s cubic-bezier(.22,.8,.2,1),
+                min-height .62s cubic-bezier(.22,.8,.2,1),
+                padding .62s cubic-bezier(.22,.8,.2,1),
+                margin-bottom .62s cubic-bezier(.22,.8,.2,1),
+                border-radius .62s cubic-bezier(.22,.8,.2,1),
+                transform .62s cubic-bezier(.22,.8,.2,1);
   }
 
   .shop .mission p,
@@ -958,7 +959,7 @@ html, body {
     margin-right: auto !important;
     margin-bottom: 6px !important;
     padding: 6px 10px !important;
-    border-radius: 999px !important;
+    border-radius: 22px !important;
     transform: translateY(-2px) scale(.98);
     transform-origin: left center;
     overflow: hidden !important;
@@ -1005,6 +1006,84 @@ html, body {
   }
 }
 </style>
+
+<style id="mobile-shop-hide-show-v1">
+@media (max-width: 768px) {
+  .app {
+    transition: gap .55s cubic-bezier(.22,.8,.2,1);
+  }
+
+  .app .left {
+    transition: height .62s cubic-bezier(.22,.8,.2,1),
+                min-height .62s cubic-bezier(.22,.8,.2,1),
+                max-height .62s cubic-bezier(.22,.8,.2,1),
+                flex-basis .62s cubic-bezier(.22,.8,.2,1);
+  }
+
+  .app .shop {
+    transform: translateY(0);
+    opacity: 1;
+    transition: height .62s cubic-bezier(.22,.8,.2,1),
+                min-height .62s cubic-bezier(.22,.8,.2,1),
+                max-height .62s cubic-bezier(.22,.8,.2,1),
+                padding .62s cubic-bezier(.22,.8,.2,1),
+                border-width .62s cubic-bezier(.22,.8,.2,1),
+                transform .62s cubic-bezier(.22,.8,.2,1),
+                opacity .35s ease;
+    will-change: height, min-height, max-height, transform, opacity;
+  }
+
+  .app .planet-wrap {
+    transition: width .62s cubic-bezier(.22,.8,.2,1),
+                height .62s cubic-bezier(.22,.8,.2,1),
+                margin .62s cubic-bezier(.22,.8,.2,1),
+                transform .62s cubic-bezier(.22,.8,.2,1);
+    will-change: width, height, margin, transform;
+  }
+
+  .app.mobile-shop-hidden {
+    gap: 0 !important;
+  }
+
+  .app.mobile-shop-hidden .left {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    flex: 0 0 100dvh !important;
+  }
+
+  .app.mobile-shop-hidden .shop {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    flex: 0 0 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-top-width: 0 !important;
+    border-bottom-width: 0 !important;
+    transform: translateY(18px);
+    opacity: 0;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .app.mobile-shop-hidden .stage {
+    padding-bottom: 0 !important;
+  }
+
+  .app.mobile-shop-hidden .planet-wrap {
+    width: min(72vw, 56svh, 330px) !important;
+    height: min(72vw, 56svh, 330px) !important;
+    margin: 0 !important;
+    transform: translate(0, 2px);
+  }
+
+  .app.mobile-shop-hidden .sat-orbit {
+    transition: inset .62s cubic-bezier(.22,.8,.2,1), transform .62s cubic-bezier(.22,.8,.2,1);
+  }
+}
+</style>
+
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button" data-mobile-label="Реклама" aria-label="Реклама для удвоения пыли">Реклама</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
@@ -1337,7 +1416,7 @@ function formatOfflineDurationLocalized(seconds) {
 }
 function isGamePaused() { return sdkPaused || adActive || document.hidden; }
 
-const INTERSTITIAL_MS = 120000; const REWARDED_VISIBLE_MS = 10000; const REWARDED_MIN_DELAY_MS = 60000; const REWARDED_MAX_DELAY_MS = 180000; const PRESTIGE_NEED = 500000;
+const INTERSTITIAL_MS = 120000; const REWARDED_VISIBLE_MS = 10000; const REWARDED_MIN_DELAY_MS = 150000; const REWARDED_MAX_DELAY_MS = 150000; const PRESTIGE_NEED = 500000;
 const OFFLINE_STORAGE_KEY = "space-clicker-offline";
 const OFFLINE_CAP_SECONDS = 10800;
 const OFFLINE_EFFICIENCY = 0.1;
@@ -2295,4 +2374,69 @@ initYandex();
   });
 })();
 </script>
+
+<script id="mobile-shop-hide-show-js">
+(function installMobileShopHideShow() {
+  const app = document.querySelector('.app');
+  const shop = document.querySelector('.shop');
+  if (!app || !shop) return;
+
+  let touchStart = null;
+  let locked = false;
+
+  const isMobile = () => window.innerWidth <= 768;
+  const setHidden = (hidden) => {
+    if (!isMobile()) return;
+    app.classList.toggle('mobile-shop-hidden', hidden);
+    if (hidden && typeof updateMobileScrollbar === 'function') {
+      setTimeout(updateMobileScrollbar, 650);
+    }
+  };
+
+  document.addEventListener('touchstart', (e) => {
+    if (!isMobile() || (typeof isGamePaused === 'function' && isGamePaused())) return;
+    if (!e.touches || !e.touches[0]) return;
+    const t = e.touches[0];
+    touchStart = { x: t.clientX, y: t.clientY, target: e.target };
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (!isMobile() || !touchStart || locked) { touchStart = null; return; }
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) { touchStart = null; return; }
+
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    touchStart = null;
+
+    if (Math.abs(dy) < 70 || Math.abs(dy) < Math.abs(dx) * 1.15) return;
+
+    const hidden = app.classList.contains('mobile-shop-hidden');
+
+    if (!hidden) {
+      // Hide only on a deliberate downward swipe while the shop is at its top.
+      if (dy > 0 && shop.scrollTop <= 2) {
+        locked = true;
+        setHidden(true);
+        setTimeout(() => { locked = false; }, 650);
+      }
+    } else {
+      // When the shop is hidden, an upward swipe anywhere on the game brings it back.
+      if (dy < 0) {
+        locked = true;
+        setHidden(false);
+        setTimeout(() => { locked = false; }, 650);
+      }
+    }
+  }, { passive: true });
+
+  // Keep the hidden state sane after rotation/resizing.
+  window.addEventListener('resize', () => {
+    if (!isMobile()) {
+      app.classList.remove('mobile-shop-hidden');
+    }
+  });
+})();
+</script>
+
 </body> </html>
