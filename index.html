@@ -912,6 +912,99 @@ html, body {
   }
 }
 </style>
+
+<style id="mission-collapse-mobile">
+@media (max-width: 768px) {
+  .shop .mission {
+    transition: min-height .22s ease, height .22s ease, padding .22s ease, margin .22s ease, opacity .18s ease;
+    overflow: hidden;
+  }
+
+  .shop .mission {
+    transform-origin: left top;
+    transition: width .38s cubic-bezier(.22,.8,.2,1),
+                height .38s cubic-bezier(.22,.8,.2,1),
+                min-height .38s cubic-bezier(.22,.8,.2,1),
+                padding .38s cubic-bezier(.22,.8,.2,1),
+                margin-bottom .38s cubic-bezier(.22,.8,.2,1),
+                border-radius .38s cubic-bezier(.22,.8,.2,1),
+                transform .38s cubic-bezier(.22,.8,.2,1);
+  }
+
+  .shop .mission p,
+  .shop .mission .bar {
+    max-height: 80px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height .34s ease, opacity .22s ease, margin .34s ease, padding .34s ease;
+  }
+
+  .shop .mission-info {
+    opacity: 1;
+    transform: scale(1);
+    overflow: hidden;
+    transition: width .30s ease, height .30s ease, min-width .30s ease, min-height .30s ease,
+                opacity .18s ease, transform .30s ease, border-width .30s ease, margin .30s ease,
+                font-size .20s ease;
+  }
+
+  .shop.mission-collapsed .mission {
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    margin-bottom: 6px !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    transform: translateY(-2px) scale(.98);
+    transform-origin: left center;
+    overflow: hidden !important;
+  }
+
+  .shop.mission-collapsed .mission-head {
+    grid-column: 1 !important;
+    min-height: 26px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
+  .shop.mission-collapsed .mission b {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    transform: translateX(3px);
+    transition: transform .25s ease;
+  }
+
+  .shop.mission-collapsed .mission p,
+  .shop.mission-collapsed .mission .bar {
+    max-height: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .shop.mission-collapsed .mission-info {
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    opacity: 0 !important;
+    transform: scale(.2) !important;
+    pointer-events: none !important;
+    font-size: 0 !important;
+  }
+}
+</style>
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button" data-mobile-label="Реклама" aria-label="Реклама для удвоения пыли">Реклама</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
@@ -2091,6 +2184,32 @@ function catchComet(ev) {
   renderHud(); renderShop(); renderPlanet(); checkMissions(); scheduleSave();
 }
 
+
+(function installMissionAutoCollapse() {
+  const scroller = document.getElementById('shop');
+  const panel = scroller ? scroller.closest('.shop') : null;
+  if (!scroller || !panel) return;
+
+  const sync = () => {
+    if (window.innerWidth > 768) {
+      panel.classList.remove('mission-collapsed');
+      return;
+    }
+
+    const collapsed = scroller.scrollTop > 14;
+    const changed = panel.classList.toggle('mission-collapsed', collapsed);
+
+    if (changed && typeof updateMobileScrollbar === 'function') {
+      setTimeout(updateMobileScrollbar, 240);
+    }
+  };
+
+  scroller.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  window.addEventListener('orientationchange', () => setTimeout(sync, 80));
+  setTimeout(sync, 0);
+})();
+
 initMobileScrollbar();
 initYandex();
 </script>
@@ -2176,4 +2295,11 @@ initYandex();
   });
 })();
 </script>
+<style id="mission-text-one-px-up">
+@media (max-width: 768px) {
+  .shop .mission:not(.is-collapsed) p {
+    transform: translateY(-2px) !important;
+  }
+}
+</style>
 </body> </html>
