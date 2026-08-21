@@ -2202,7 +2202,9 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
          Do not cancel their touchstart here, otherwise the browser never emits click. */
       if (button.classList && (
         button.classList.contains('mission-tool-btn') ||
-        button.classList.contains('utility-close')
+        button.classList.contains('utility-close') ||
+        button.classList.contains('archive-info-btn') ||
+        button.classList.contains('archive-info-close')
       )) {
         return;
       }
@@ -2245,7 +2247,8 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
   document.addEventListener('touchcancel', () => { cardTouch = null; }, { capture:true, passive:true });
   document.addEventListener('click', e => {
     const utilityBtn = e.target && e.target.closest && e.target.closest('.mission-tool-btn');
-    if (utilityBtn) {
+    const archiveInfoBtn = e.target && e.target.closest && e.target.closest('.archive-info-btn');
+    if (utilityBtn || archiveInfoBtn) {
       return;
     }
     const btn = e.target && e.target.closest && e.target.closest('#mobileShopOpen');
@@ -3000,12 +3003,12 @@ initYandex();
 #archiveInfoModal{
   position:fixed !important;
   inset:0 !important;
-  z-index:999999 !important;
+  z-index:2000000 !important;
 }
 #archiveInfoModal.show{ display:grid !important; }
 #archiveInfoModal .modal-card{
   position:relative !important;
-  z-index:1000000 !important;
+  z-index:2000001 !important;
 }
 #archiveInfoModal .archive-info-close{
   position:absolute !important;
@@ -3339,10 +3342,194 @@ initYandex();
     top: 0px !important;
     left: -1px !important;
 }
+
+</style>
+
+<!-- FINAL MOBILE ARCHIVE + MISSION CLEANUP -->
+<style id="final-mobile-archive-cleanup">
+@media (max-width: 768px) {
+  /* Remove the large Mission card under the three top buttons. */
+  .shop > .mission {
+    display: none !important;
+  }
+
+  /* Put the archive explanation button immediately beside the title. */
+  .archive-title-row {
+    display: inline-flex !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    margin: 0 0 8px !important;
+  }
+
+  .archive-title-row h3 {
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  .archive-info-btn {
+    position: relative !important;
+    display: inline-flex !important;
+    flex: 0 0 28px !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 200001 !important;
+    touch-action: manipulation !important;
+    pointer-events: auto !important;
+  }
+}
+</style>
+
+<!-- FINAL ARCHIVE INFO TOUCH FIX -->
+<style id="final-archive-info-touch-fix">
+@media (max-width: 768px) {
+  .archive-title-row {
+    position: relative !important;
+    z-index: 200001 !important;
+    pointer-events: auto !important;
+  }
+
+  .archive-info-btn {
+    position: relative !important;
+    z-index: 200002 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+}
+</style>
+
+<script id="final-archive-info-touch-fix-js">
+(function(){
+  function openArchiveInfo(){
+    var modal = document.getElementById('archiveInfoModal');
+    if (modal) {
+      modal.classList.add('show');
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener('touchstart', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-btn') : null;
+    if (!btn) return;
+    if (e.cancelable) e.preventDefault();
+    e.stopImmediatePropagation();
+    openArchiveInfo();
+  }, { capture: true, passive: false });
+
+  document.addEventListener('pointerdown', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-btn') : null;
+    if (!btn) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openArchiveInfo();
+  }, { capture: true });
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-btn') : null;
+    if (!btn) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openArchiveInfo();
+  }, { capture: true });
+})();
+</script>
+
+<style id="final-archive-info-topmost">
+/* The archive explanation window must always be above every other modal/panel. */
+#archiveInfoModal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2000000 !important;
+}
+#archiveInfoModal.show {
+  display: grid !important;
+}
+#archiveInfoModal .modal-card {
+  position: relative !important;
+  z-index: 2000001 !important;
+}
+</style>
+
+<style id="final-mobile-hide-mission-card">
 @media (max-width: 768px) {
   .shop > .mission {
     display: none !important;
   }
 }
-
 </style>
+
+<!-- FINAL ARCHIVE INFO CLOSE TOUCH FIX -->
+<style id="final-archive-info-close-touch-fix">
+@media (max-width: 768px) {
+  #archiveInfoModal .archive-info-close {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    z-index: 2000003 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+  }
+}
+@media (max-width: 768px) {
+  .archive-info-btn {
+    transform: translateX(-10px) translateY(-2px) !important;
+  }
+}
+</style>
+<style>
+@media (max-width: 768px) {
+  .archive-info-btn {
+    position: relative !important;
+    left: -23px !important;
+    top: 2px !important;
+  }
+}
+</style>
+
+<script id="final-archive-info-close-touch-fix-js">
+(function(){
+  function closeArchiveInfo(e){
+    if (e) {
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+    }
+    var modal = document.getElementById('archiveInfoModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  document.addEventListener('touchstart', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-close') : null;
+    if (!btn) return;
+    closeArchiveInfo(e);
+  }, { capture: true, passive: false });
+
+  document.addEventListener('pointerdown', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-close') : null;
+    if (!btn) return;
+    closeArchiveInfo(e);
+  }, { capture: true, passive: false });
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.archive-info-close') : null;
+    if (!btn) return;
+    closeArchiveInfo(e);
+  }, { capture: true });
+})();
+</script>
