@@ -1345,20 +1345,41 @@ function detectLang() {
 }
 
 
-/* Mobile shop scrolling: body uses touch-action:none, so we scroll the shop manually. */
-(function installMobileShopScroll() {
+/* Mobile shop scrolling with momentum/inertia. Mission collapse is click-controlled now. */
+(function installMobileShopScrollWithMomentum() {
   const scroller = document.getElementById('shop');
   if (!scroller) return;
 
   let drag = null;
+  let inertiaFrame = 0;
+  let velocity = 0;
+
+  const stopInertia = () => {
+    if (inertiaFrame) cancelAnimationFrame(inertiaFrame);
+    inertiaFrame = 0;
+    velocity = 0;
+  };
+
+  const runInertia = () => {
+    if (Math.abs(velocity) < 0.15) {
+      stopInertia();
+      return;
+    }
+    const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+    scroller.scrollTop = Math.max(0, Math.min(maxScroll, scroller.scrollTop - velocity));
+    velocity *= 0.94;
+    inertiaFrame = requestAnimationFrame(runInertia);
+  };
 
   scroller.addEventListener('touchstart', (e) => {
     if (isGamePaused()) return;
     const t = e.touches && e.touches[0];
     if (!t) return;
+    stopInertia();
     drag = {
       y: t.clientY,
-      scrollTop: scroller.scrollTop,
+      lastY: t.clientY,
+      lastTime: performance.now(),
       moved: false
     };
   }, { passive: true });
@@ -1367,67 +1388,55 @@ function detectLang() {
     if (!drag) return;
     const t = e.touches && e.touches[0];
     if (!t) return;
-
+    const now = performance.now();
     const dy = t.clientY - drag.y;
-    if (Math.abs(dy) > 4) drag.moved = true;
+    const dt = Math.max(1, now - drag.lastTime);
+    const step = t.clientY - drag.lastY;
 
-    scroller.scrollTop = drag.scrollTop - dy;
+    if (Math.abs(dy) > 4) drag.moved = true;
+    velocity = (step / dt) * 16;
+    scroller.scrollTop -= step;
+
+    drag.lastY = t.clientY;
+    drag.lastTime = now;
     if (e.cancelable) e.preventDefault();
   }, { passive: false });
 
   const end = () => {
+    if (!drag) return;
+    const v = velocity;
     drag = null;
+    velocity = Math.max(-28, Math.min(28, v));
+    runInertia();
   };
 
   scroller.addEventListener('touchend', end, { passive: true });
-  scroller.addEventListener('touchcancel', end, { passive: true });
+  scroller.addEventListener('touchcancel', () => { drag = null; stopInertia(); }, { passive: true });
 })();
 
+/* Mission is collapsed/expanded only by tapping it, never by shop scrolling. */
+(function installMissionClickCollapse() {
+  const mission = document.getElementById('mission');
+  const shop = document.querySelector('.shop');
+  if (!mission || !shop) return;
 
-/* Robust mobile shop swipe: allow finger swipes even though the page itself is locked from scrolling. */
-(function installRobustMobileShopSwipe() {
-  const scroller = document.getElementById('shop');
-  if (!scroller) return;
+  const syncScrollbar = () => {
+    if (typeof updateMobileScrollbar === 'function') setTimeout(updateMobileScrollbar, 240);
+  };
 
-  let gesture = null;
-
-  document.addEventListener('touchstart', (e) => {
+  const toggleMission = (e) => {
     if (window.innerWidth > 768 || isGamePaused()) return;
-    const t = e.touches && e.touches[0];
-    if (!t) return;
-    const target = e.target;
-    if (!(target.closest && target.closest('#shop'))) return;
-
-    gesture = {
-      y: t.clientY,
-      scrollTop: scroller.scrollTop,
-      moved: false,
-      startedInCard: !!(target.closest && target.closest('.card'))
-    };
-  }, { capture: true, passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    if (!gesture || window.innerWidth > 768 || isGamePaused()) return;
-    const t = e.touches && e.touches[0];
-    if (!t) return;
-
-    const dy = t.clientY - gesture.y;
-    if (Math.abs(dy) > 5) gesture.moved = true;
-
-    /* Once the finger moves, treat the gesture as a scroll, not a purchase. */
-    if (gesture.moved) {
-      scroller.scrollTop = gesture.scrollTop - dy;
-      if (e.cancelable) e.preventDefault();
+    if (e && e.target && e.target.closest && e.target.closest('.mission-info')) return;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-  }, { capture: true, passive: false });
+    shop.classList.toggle('mission-collapsed');
+    syncScrollbar();
+  };
 
-  document.addEventListener('touchend', () => {
-    gesture = null;
-  }, { capture: true, passive: true });
-
-  document.addEventListener('touchcancel', () => {
-    gesture = null;
-  }, { capture: true, passive: true });
+  mission.addEventListener('touchend', toggleMission, { passive: false });
+  mission.addEventListener('click', toggleMission);
 })();
 
 function applyStaticLanguage() {
@@ -2333,31 +2342,6 @@ function catchComet(ev) {
 }
 
 
-(function installMissionAutoCollapse() {
-  const scroller = document.getElementById('shop');
-  const panel = scroller ? scroller.closest('.shop') : null;
-  if (!scroller || !panel) return;
-
-  const sync = () => {
-    if (window.innerWidth > 768) {
-      panel.classList.remove('mission-collapsed');
-      return;
-    }
-
-    const collapsed = scroller.scrollTop > 14;
-    const changed = panel.classList.toggle('mission-collapsed', collapsed);
-
-    if (changed && typeof updateMobileScrollbar === 'function') {
-      setTimeout(updateMobileScrollbar, 240);
-    }
-  };
-
-  scroller.addEventListener('scroll', sync, { passive: true });
-  window.addEventListener('resize', sync);
-  window.addEventListener('orientationchange', () => setTimeout(sync, 80));
-  setTimeout(sync, 0);
-})();
-
 initMobileScrollbar();
 initYandex();
 </script>
@@ -2512,3 +2496,38 @@ initYandex();
 </script>
 
 </body> </html>
+
+<style id="reward-label-dust-v1">
+@media (max-width: 768px) {
+  .reward-btn {
+    display: none;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    line-height: 1 !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 6px 14px !important;
+  }
+  .reward-btn.show { display: flex !important; }
+  .reward-btn::before {
+    content: attr(data-mobile-label);
+    display: block;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    white-space: nowrap;
+  }
+  .reward-btn::after {
+    content: "Пыль ×2";
+    display: block;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+}
+</style>
