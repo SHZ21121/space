@@ -689,6 +689,86 @@ html, body {
   }
 }
 </style>
+
+<style id="mobile-stats-and-modal-fix-v4">
+@media (max-width: 768px) {
+  /* Keep the stats block compact: dark matter stays on one line. */
+  .stats {
+    width: 52vw !important;
+    min-width: 0 !important;
+    max-width: 54vw !important;
+  }
+  .matter {
+    width: 100% !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow: visible !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    margin-top: 5px !important;
+  }
+  /* Rank gets its own clean line between Dark Matter and progress. */
+  .era {
+    margin-top: 4px !important;
+    line-height: 1.15 !important;
+  }
+  .era-progress {
+    margin-top: 3px !important;
+    line-height: 1.15 !important;
+    text-align: right !important;
+  }
+
+  /* Mission hint modal: move the close button clearly above the title. */
+  .mission-modal-card .mission-close {
+    top: 2px !important;
+    right: 8px !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 28px !important;
+    font-size: 18px !important;
+  }
+  .mission-modal-card h3 {
+    padding-top: 10px !important;
+    margin-bottom: 8px !important;
+  }
+}
+</style>
+
+<style id="mobile-rank-spacing-fix">
+@media (max-width: 768px) {
+  /* Compact the right-side HUD into clean, separate rows. */
+  .stats {
+    row-gap: 0 !important;
+  }
+  .matter {
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+  }
+  .era {
+    margin-top: 1px !important;
+    transform: translate(18px, -3px) !important;
+    margin-bottom: -1px !important;
+    padding: 4px 9px !important;
+    line-height: 1.1 !important;
+  }
+  .era-progress {
+    margin-top: 1px !important;
+    transform: translateY(-3px) !important;
+    line-height: 1.1 !important;
+    min-height: 1.1em;
+  }
+}
+</style>
+
+<style id="era-progress-lower-fix">
+@media (max-width: 768px) {
+  .era-progress {
+    margin-top: 5px !important;
+    transform: translateY(0) !important;
+  }
+}
+</style>
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
