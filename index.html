@@ -769,7 +769,118 @@ html, body {
   }
 }
 </style>
-</head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button">Удвоить баланс за рекламу</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
+
+<style id="mobile-era-reward-confirm-fix">
+@media (max-width: 768px) {
+  /* Keep the rank inside the stats column and pull it slightly left. */
+  .stats .era {
+    margin-right: 18px !important;
+    transform: none !important;
+    max-width: calc(100% - 18px) !important;
+  }
+
+  /* Compact, readable rewarded-ad button on phones. */
+  .reward-btn {
+    right: 10px !important;
+    bottom: calc(54px + env(safe-area-inset-bottom)) !important;
+    min-width: 104px !important;
+    width: 104px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 7px 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .reward-confirm-card {
+    width: min(92vw, 380px) !important;
+    padding: 20px !important;
+    text-align: center;
+  }
+
+  .reward-confirm-card h3 {
+    margin-bottom: 10px !important;
+    padding-right: 0 !important;
+    color: var(--gold);
+  }
+
+  .reward-confirm-card p {
+    margin: 0 !important;
+    color: var(--muted);
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .reward-confirm-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  .reward-confirm-actions button {
+    min-height: 46px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    padding: 10px 12px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+  }
+}
+</style>
+
+<style id="era-alignment-only-fix">
+/* Only align the rank/progress rows; leave the rest of the game untouched. */
+@media (max-width: 768px) {
+  .stats .era {
+    align-self: flex-end !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: 5px !important;
+    transform: none !important;
+    width: max-content !important;
+    max-width: 100% !important;
+  }
+
+  .stats .era-progress {
+    align-self: flex-end !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    transform: none !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    text-align: right !important;
+  }
+}
+</style>
+
+<style id="mobile-era-equal-spacing-fix">
+@media (max-width: 768px) {
+  /* Equal spacing between rate, dark matter, rank and next-planet rows. */
+  .stats .rate,
+  .stats .matter,
+  .stats .era,
+  .stats .era-progress {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .stats .rate {
+    margin-top: 4px !important;
+  }
+
+  .stats .matter,
+  .stats .era,
+  .stats .era-progress {
+    margin-top: 6px !important;
+  }
+
+  .stats .era {
+    margin-bottom: 0 !important;
+  }
+}
+</style>
+</head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button" data-mobile-label="Реклама" aria-label="Реклама для удвоения пыли">Реклама</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
     <h3>Космический отчет</h3>
@@ -1083,7 +1194,7 @@ function applyStaticLanguage() {
   elOfflineClaim.textContent = t('offlineBasic');
   elOfflineClaimAd.textContent = t('offlineAd');
   document.querySelector('#offlineModal h3').textContent = t('offlineTitle');
-  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad'; elReward.dataset.mobileLabel = currentLang === 'ru' ? 'РЕКЛАМА • ×2' : 'AD • ×2';
+  elReward.textContent = currentLang === 'ru' ? 'Реклама' : 'Ad'; elReward.dataset.mobileLabel = currentLang === 'ru' ? 'Реклама' : 'Ad';
 }
 function formatOfflineDurationLocalized(seconds) {
   const total = Math.max(0, Math.floor(seconds));
@@ -1876,7 +1987,7 @@ function applyStaticLanguage() {
   elOfflineClaimAd.textContent = t('offlineAd');
   document.querySelector('#offlineModal h3').textContent = t('offlineTitle');
   document.querySelector('#offlineRewardBox').firstChild.textContent = currentLang === 'ru' ? 'Накоплено: ' : 'Collected: ';
-  elReward.textContent = currentLang === 'ru' ? 'Удвоить баланс за рекламу' : 'Double balance with ad';
+  elReward.textContent = currentLang === 'ru' ? 'Реклама' : 'Ad';
 }
 
 function showRewarded(onSuccess) {
@@ -1950,4 +2061,87 @@ function catchComet(ev) {
 
 initMobileScrollbar();
 initYandex();
-</script></body> </html>
+</script>
+  <div class="modal" id="rewardConfirmModal" aria-hidden="true">
+    <div class="modal-card reward-confirm-card">
+      <h3 id="rewardConfirmTitle">Реклама</h3>
+      <p id="rewardConfirmText">Вы хотите посмотреть рекламу, чтобы удвоить космическую пыль?</p>
+      <div class="modal-actions reward-confirm-actions">
+        <button class="no" id="rewardConfirmNo" type="button">Нет</button>
+        <button class="ok" id="rewardConfirmYes" type="button">Да</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function installRewardConfirm(){
+  const rewardBtn = document.getElementById('rewardBtn');
+  const modal = document.getElementById('rewardConfirmModal');
+  const noBtn = document.getElementById('rewardConfirmNo');
+  const yesBtn = document.getElementById('rewardConfirmYes');
+  if (!rewardBtn || !modal || !noBtn || !yesBtn) return;
+
+  const open = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    if (typeof adActive !== 'undefined' && adActive) return;
+    if (!rewardBtn.classList.contains('show')) return;
+    if (typeof markTouch === 'function') markTouch();
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+  };
+
+  const close = () => {
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+  };
+
+  const confirmAd = (e) => {
+    if (e) { e.preventDefault(); e.stopImmediatePropagation(); }
+    close();
+    if (typeof hideRewardedBtn === 'function') hideRewardedBtn(false);
+
+    if (typeof showRewarded !== 'function') {
+      if (typeof toast === 'function') toast('Реклама не просмотрена');
+      return;
+    }
+
+    showRewarded((rewarded) => {
+      if (!rewarded) {
+        if (typeof toast === 'function') toast('Реклама не просмотрена');
+        return;
+      }
+
+      const before = Number(state.score) || 0;
+      state.score = before * 2;
+      state.earned += before;
+      if (typeof render === 'function') render();
+      if (typeof scheduleSave === 'function') scheduleSave();
+      if (typeof toast === 'function') toast('Космическая пыль удвоена!');
+    });
+  };
+
+  /* Capture phase blocks the old direct reward-button handlers. */
+  document.addEventListener('touchstart', (e) => {
+    if (e.target && e.target.closest && e.target.closest('#rewardBtn')) open(e);
+  }, {capture:true, passive:false});
+
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.closest && e.target.closest('#rewardBtn')) open(e);
+  }, {capture:true, passive:false});
+
+  noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); close(); }, {passive:false});
+  noBtn.addEventListener('click', close);
+  yesBtn.addEventListener('touchstart', confirmAd, {passive:false});
+  yesBtn.addEventListener('click', (e) => {
+    if (typeof lastTouchAt === 'number' && Date.now() - lastTouchAt < 600) return;
+    confirmAd(e);
+  });
+  modal.addEventListener('pointerdown', (e) => {
+    if (e.target === modal) close();
+  });
+})();
+</script>
+</body> </html>
