@@ -2191,6 +2191,16 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
     if (button) {
       const id = button.id;
       lastFastTouch = Date.now(); touchTriggeredAt = lastFastTouch; suppress(e);
+      if (id === 'mobileShopOpen') {
+        const mobileApp = document.querySelector('.app');
+        if (mobileApp && window.innerWidth <= 768) {
+          mobileApp.classList.remove('mobile-shop-hidden');
+          const mobileOpen = document.getElementById('mobileShopOpen');
+          if (mobileOpen) mobileOpen.classList.remove('show');
+          if (typeof updateMobileScrollbar === 'function') setTimeout(updateMobileScrollbar, 650);
+        }
+        return;
+      }
       if (id === 'prestigeBtn') openPrestigeModal(e);
       else if (id === 'prestigeNo') elModal.classList.remove('show');
       else if (id === 'prestigeYes') doPrestige();
@@ -2216,6 +2226,18 @@ document.addEventListener('selectstart', e => e.preventDefault(), { capture: tru
   }, { capture:true, passive:false });
   document.addEventListener('touchcancel', () => { cardTouch = null; }, { capture:true, passive:true });
   document.addEventListener('click', e => {
+    const btn = e.target && e.target.closest && e.target.closest('#mobileShopOpen');
+    if (btn) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const mobileApp = document.querySelector('.app');
+      if (mobileApp && window.innerWidth <= 768) {
+        mobileApp.classList.remove('mobile-shop-hidden');
+        btn.classList.remove('show');
+        if (typeof updateMobileScrollbar === 'function') setTimeout(updateMobileScrollbar, 650);
+      }
+      return;
+    }
     if (Date.now() - lastFastTouch < 650) { e.preventDefault(); e.stopImmediatePropagation(); }
   }, { capture:true });
 })();
