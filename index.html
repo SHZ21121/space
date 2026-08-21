@@ -1085,50 +1085,40 @@ html, body {
 </style>
 
 
-<style id="mobile-3d-satellites">
-/* The orbit keeps rotating continuously; the 3D tilt itself is animated separately.
-   That way opening/closing the shop never swaps animation modes abruptly. */
-@property --orbit-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-@property --orbit-tilt {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
+<style id="mobile-flat-satellites">
+/* Mobile fullscreen mode: flat clockwise satellites, no 3D tilt/depth effect. */
 @media (max-width: 768px) {
   .app .planet-wrap {
-    perspective: 900px;
-    transform-style: preserve-3d;
+    perspective: none;
+    transform-style: flat;
   }
 
   .app .sat-orbit {
-    transform-style: preserve-3d;
-    transform: rotateX(var(--orbit-tilt, 0deg)) rotateZ(var(--orbit-angle, 0deg));
-    animation: orbitAngle linear infinite;
-    will-change: transform, z-index;
-    transition: --orbit-tilt .85s cubic-bezier(.22,.8,.2,1);
+    transform: none !important;
+    transform-style: flat;
+    animation: spin linear infinite !important;
+    will-change: transform;
+    transition: inset .62s cubic-bezier(.22,.8,.2,1);
   }
 
   .app .sat {
-    transform: translate(-50%, -50%) scale(var(--sat-depth-scale, 1));
-    opacity: var(--sat-depth-opacity, 1);
-    filter: blur(var(--sat-depth-blur, 0px));
-    will-change: transform, opacity, filter;
-    transition: transform .42s cubic-bezier(.22,.8,.2,1), opacity .42s ease, filter .42s ease;
+    transform: translate(-50%, -50%) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transition: none;
+  }
+
+  /* Fullscreen: enlarge the planet only moderately and keep all satellites close. */
+  .app.mobile-shop-hidden .planet-wrap {
+    width: min(62vw, 48svh, 300px) !important;
+    height: min(62vw, 48svh, 300px) !important;
+    margin: 0 !important;
+    transform: translate(0, 2px);
   }
 
   .app.mobile-shop-hidden .sat-orbit {
-    --orbit-tilt: 66deg;
+    inset: -3% !important;
   }
-}
-
-@keyframes orbitAngle {
-  from { --orbit-angle: 0deg; }
-  to   { --orbit-angle: 360deg; }
 }
 </style>
 
@@ -2423,127 +2413,194 @@ initYandex();
 })();
 </script>
 
-<script id="mobile-3d-satellites-js">
-(function installMobile3DSatellites() {
-  const app = document.querySelector('.app');
-  const planet = document.getElementById('planet');
-  const sats = document.getElementById('sats');
-  if (!app || !planet || !sats) return;
 
-  let raf = 0;
 
-  function resetSatDepth() {
-    sats.querySelectorAll('.sat-orbit').forEach((orbit) => {
-      orbit.style.zIndex = '5';
-      const sat = orbit.querySelector('.sat');
-      if (!sat) return;
-      sat.style.setProperty('--sat-depth-scale', '1');
-      sat.style.setProperty('--sat-depth-opacity', '1');
-      sat.style.setProperty('--sat-depth-blur', '0px');
-    });
+<style id="mobile-shop-swipe-polish">
+@media (max-width: 768px) {
+  /* Only the shop header is a hide/show swipe zone. */
+  .shop > h2 {
+    touch-action: pan-y;
   }
 
-  function updateSatDepth(now) {
-    const fullScreen = window.innerWidth <= 768 && app.classList.contains('mobile-shop-hidden');
-    if (!fullScreen) {
-      resetSatDepth();
-      // Keep the 3D tilt animation CSS-driven so every orbit returns smoothly
-      // to the flat clockwise path as the shop comes back.
-      raf = 0;
-      return;
-    }
-
-    sats.querySelectorAll('.sat-orbit').forEach((orbit) => {
-      const duration = parseFloat(orbit.style.animationDuration) || 18;
-      const delay = parseFloat(orbit.style.animationDelay) || 0;
-      const phase = ((((now / 1000) - delay) % duration) + duration) % duration / duration;
-      const angle = phase * 360;
-      const radians = angle * Math.PI / 180;
-      const depth = (1 - Math.cos(radians)) / 2;
-
-      // Bottom half = slightly in front; top half = slightly behind the planet.
-      orbit.style.zIndex = depth > 0.5 ? '6' : '1';
-
-      const sat = orbit.querySelector('.sat');
-      if (!sat) return;
-      sat.style.setProperty('--sat-depth-scale', (0.88 + depth * 0.18).toFixed(3));
-      sat.style.setProperty('--sat-depth-opacity', (0.72 + depth * 0.28).toFixed(3));
-      sat.style.setProperty('--sat-depth-blur', ((1 - depth) * 0.45).toFixed(2) + 'px');
-    });
-
-    raf = requestAnimationFrame(updateSatDepth);
+  .app.mobile-shop-dragging .shop {
+    transition: none !important;
+    will-change: transform, opacity;
   }
 
-  function start() {
-    if (!raf) raf = requestAnimationFrame(updateSatDepth);
+  .app.mobile-shop-dragging .planet-wrap {
+    transition: none !important;
+    will-change: width, height, transform;
   }
+}
+</style>
 
-  const observer = new MutationObserver(start);
-  observer.observe(app, { attributes: true, attributeFilter: ['class'] });
-  window.addEventListener('resize', start);
-  start();
-})();
-</script>
 
+<style id="mobile-shop-drag-final">
+@media (max-width: 768px) {
+  .app .shop {
+    --shop-drag: 0px;
+    transform: translateY(var(--shop-drag));
+    transition-duration: var(--shop-snap-ms, .62s);
+  }
+}
+</style>
 <script id="mobile-shop-hide-show-js">
 (function installMobileShopHideShow() {
   const app = document.querySelector('.app');
   const shop = document.querySelector('.shop');
-  if (!app || !shop) return;
+  const shopHeader = shop ? shop.querySelector(':scope > h2') : null;
+  if (!app || !shop || !shopHeader) return;
 
   let touchStart = null;
   let locked = false;
+  let lastY = 0;
+  let lastTime = 0;
+  let velocityY = 0;
 
   const isMobile = () => window.innerWidth <= 768;
-  const setHidden = (hidden) => {
+
+  const setHidden = (hidden, fast = false) => {
     if (!isMobile()) return;
+    app.classList.remove('mobile-shop-dragging');
+    app.style.removeProperty('--shop-drag');
+    if (fast) app.style.setProperty('--shop-snap-ms', '420ms');
+    else app.style.removeProperty('--shop-snap-ms');
     app.classList.toggle('mobile-shop-hidden', hidden);
     if (hidden && typeof updateMobileScrollbar === 'function') {
       setTimeout(updateMobileScrollbar, 650);
     }
+    setTimeout(() => app.style.removeProperty('--shop-snap-ms'), fast ? 460 : 20);
   };
 
-  document.addEventListener('touchstart', (e) => {
-    if (!isMobile() || (typeof isGamePaused === 'function' && isGamePaused())) return;
-    if (!e.touches || !e.touches[0]) return;
-    const t = e.touches[0];
-    touchStart = { x: t.clientX, y: t.clientY, target: e.target };
+  const begin = (t) => {
+    touchStart = { x: t.clientX, y: t.clientY };
+    lastY = t.clientY;
+    lastTime = performance.now();
+    velocityY = 0;
+  };
+
+  /* Hide the shop only when the gesture starts in the SHOP TITLE area.
+     Upgrade cards keep their normal scrolling/purchasing behavior. */
+  shopHeader.addEventListener('touchstart', (e) => {
+    if (!isMobile() || locked || (typeof isGamePaused === 'function' && isGamePaused())) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const hidden = app.classList.contains('mobile-shop-hidden');
+    if (hidden) return;
+    begin(t);
   }, { passive: true });
 
-  document.addEventListener('touchend', (e) => {
-    if (!isMobile() || !touchStart || locked) { touchStart = null; return; }
+  shopHeader.addEventListener('touchmove', (e) => {
+    if (!touchStart || !isMobile() || locked || app.classList.contains('mobile-shop-hidden')) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+
+    const now = performance.now();
+    const dt = Math.max(8, now - lastTime);
+    const dy = t.clientY - touchStart.y;
+    const dx = t.clientX - touchStart.x;
+    velocityY = (t.clientY - lastY) / dt;
+    lastY = t.clientY;
+    lastTime = now;
+
+    /* Only a vertical downward gesture. */
+    if (dy > 4 && Math.abs(dy) > Math.abs(dx) * 1.1) {
+      if (e.cancelable) e.preventDefault();
+      app.classList.add('mobile-shop-dragging');
+      const resistance = Math.min(1, dy / 140);
+      app.style.setProperty('--shop-drag', Math.round(dy * (0.72 + resistance * 0.18)) + 'px');
+    }
+  }, { passive: false });
+
+  shopHeader.addEventListener('touchend', (e) => {
+    if (!touchStart || !isMobile() || locked) { touchStart = null; return; }
     const t = e.changedTouches && e.changedTouches[0];
     if (!t) { touchStart = null; return; }
 
     const dx = t.clientX - touchStart.x;
     const dy = t.clientY - touchStart.y;
+    const speed = velocityY;
     touchStart = null;
 
-    if (Math.abs(dy) < 70 || Math.abs(dy) < Math.abs(dx) * 1.15) return;
+    if (e.cancelable) e.preventDefault();
 
-    const hidden = app.classList.contains('mobile-shop-hidden');
+    const intentionalDown = dy > 42 && dy > Math.abs(dx) * 1.1;
+    const flickDown = speed > 0.28 && dy > 18 && dy > Math.abs(dx) * 1.05;
 
-    if (!hidden) {
-      // Hide only on a deliberate downward swipe while the shop is at its top.
-      if (dy > 0 && shop.scrollTop <= 2) {
-        locked = true;
-        setHidden(true);
-        setTimeout(() => { locked = false; }, 650);
-      }
+    app.classList.remove('mobile-shop-dragging');
+    app.style.removeProperty('--shop-drag');
+
+    if ((intentionalDown || flickDown) && shop.scrollTop <= 2) {
+      locked = true;
+      setHidden(true, true);
+      setTimeout(() => { locked = false; }, 500);
     } else {
-      // When the shop is hidden, an upward swipe anywhere on the game brings it back.
-      if (dy < 0) {
-        locked = true;
-        setHidden(false);
-        setTimeout(() => { locked = false; }, 650);
-      }
+      /* Not enough movement: smoothly return the panel to its original spot. */
+      app.style.setProperty('--shop-snap-ms', '360ms');
+      requestAnimationFrame(() => {
+        app.classList.add('mobile-shop-dragging');
+        app.style.setProperty('--shop-drag', '0px');
+        setTimeout(() => {
+          app.classList.remove('mobile-shop-dragging');
+          app.style.removeProperty('--shop-drag');
+          app.style.removeProperty('--shop-snap-ms');
+        }, 370);
+      });
+    }
+  }, { passive: false });
+
+  shopHeader.addEventListener('touchcancel', () => {
+    touchStart = null;
+    app.classList.remove('mobile-shop-dragging');
+    app.style.removeProperty('--shop-drag');
+  }, { passive: true });
+
+  /* When the shop is hidden, an upward flick anywhere on the game brings it back.
+     The release-to-snap feels like momentum rather than a hard switch. */
+  document.addEventListener('touchstart', (e) => {
+    if (!isMobile() || locked || !app.classList.contains('mobile-shop-hidden')) return;
+    if (!e.touches || !e.touches[0]) return;
+    const t = e.touches[0];
+    touchStart = { x: t.clientX, y: t.clientY, hiddenRestore: true };
+    lastY = t.clientY;
+    lastTime = performance.now();
+    velocityY = 0;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!touchStart || !touchStart.hiddenRestore || !isMobile() || locked) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const now = performance.now();
+    const dt = Math.max(8, now - lastTime);
+    velocityY = (t.clientY - lastY) / dt;
+    lastY = t.clientY;
+    lastTime = now;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    if (!touchStart || !touchStart.hiddenRestore || !isMobile() || locked) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) { touchStart = null; return; }
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    const speed = velocityY;
+    touchStart = null;
+
+    const intentionalUp = dy < -42 && -dy > Math.abs(dx) * 1.1;
+    const flickUp = speed < -0.28 && dy < -18 && -dy > Math.abs(dx) * 1.05;
+    if (intentionalUp || flickUp) {
+      locked = true;
+      setHidden(false, true);
+      setTimeout(() => { locked = false; }, 500);
     }
   }, { passive: true });
 
-  // Keep the hidden state sane after rotation/resizing.
   window.addEventListener('resize', () => {
     if (!isMobile()) {
-      app.classList.remove('mobile-shop-hidden');
+      app.classList.remove('mobile-shop-hidden', 'mobile-shop-dragging');
+      app.style.removeProperty('--shop-drag');
+      app.style.removeProperty('--shop-snap-ms');
     }
   });
 })();
