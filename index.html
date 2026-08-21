@@ -880,6 +880,38 @@ html, body {
   }
 }
 </style>
+
+<style id="mobile-rank-final-polish">
+@media (max-width: 768px) {
+  /* Raise rank and next-planet rows closer to Dark Matter, while keeping a clear gap. */
+  .stats .era {
+    margin-top: -1px !important;
+    margin-bottom: 0 !important;
+    padding: 4px 10px !important;
+    font-size: clamp(8px, 2.6vw, 10px) !important;
+    letter-spacing: 0.055em !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    align-self: flex-end !important;
+    transform: none !important;
+  }
+
+  .stats .era-progress {
+    margin-top: 9px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.1 !important;
+    min-height: 1.1em !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    align-self: flex-end !important;
+    text-align: right !important;
+    transform: none !important;
+  }
+}
+</style>
 </head> <body> <canvas id="stars"></canvas> <button class="sound-btn" id="soundBtn" type="button" title="Звук">🔊</button> <div class="app"> <section class="left"> <div class="hud"> <div> <h1>Космический кликер</h1> <div class="sub">Собирай звёздную пыль и развивай станцию</div> </div> <div class="stats"> <div class="score" id="score">0</div> <div class="rate" id="rate">+0 / сек · +1 / клик</div> <div class="matter" id="matter">Тёмная материя: 0 · бонус +0%</div> <div class="era" id="era">Звание: Астероид</div> <div class="era-progress" id="eraProgress"></div> <div class="boost-tag" id="boostTag">Метеоритный дождь x5</div> </div> </div> <div class="stage"> <div class="planet-wrap" id="planet" data-stage="0" role="button" aria-label="Кликать по планете"> <div class="sats" id="sats"></div> <div class="planet-ring"></div> <div class="planet"> <div class="planet-station" aria-hidden="true"> <span></span><span></span><span></span> </div> </div> </div> </div> </section> <aside class="shop"> <h2>Магазин апгрейдов</h2> <button class="prestige-btn" id="prestigeBtn" type="button">Сверхновая (Престиж)</button> <div class="mission" id="mission"> <div class="mission-head"> <b>Миссия</b> </div> <button class="mission-info" id="missionInfo" type="button" title="Подсказка по миссии" aria-label="Подсказка по текущей миссии">!</button> <p id="missionText">—</p> <div class="bar"><i id="missionBar"></i></div> </div> <div class="upgrades" id="shop"></div><div class="mobile-scrollbar" id="mobileScrollbar" aria-hidden="true"><div class="mobile-scrollbar-thumb" id="mobileScrollbarThumb"></div></div> </aside> </div> <div class="comet" id="comet" aria-label="Золотая комета" role="button"><div class="comet-core"></div></div> <div class="toast" id="toast"></div> <button class="reward-btn" id="rewardBtn" type="button" data-mobile-label="Реклама" aria-label="Реклама для удвоения пыли">Реклама</button> <div class="modal" id="modal"> <div class="modal-card"> <h3>Взорвать сверхновую?</h3> <p>Баланс и апгрейды сбросятся. Ты получишь 1 единицу тёмной материи: весь будущий доход навсегда вырастет на 50% за каждую единицу.</p> <div class="modal-actions"> <button class="no" id="prestigeNo" type="button">Отмена</button> <button class="ok" id="prestigeYes" type="button">Переродиться</button> </div> </div> </div> <div class="modal" id="missionModal"> <div class="modal-card mission-modal-card"> <button class="mission-close" id="missionClose" type="button" aria-label="Закрыть">×</button> <h3 id="missionModalTitle">Подсказка по миссии</h3> <p id="missionModalSummary">—</p> <div class="mission-detail" id="missionModalDetail">—</div> </div> </div>
 <div class="modal offline-modal" id="offlineModal">
   <div class="modal-card">
